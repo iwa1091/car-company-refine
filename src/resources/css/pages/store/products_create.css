@@ -1,0 +1,162 @@
+/* メインコンテンツのコンテナ */
+.main-contents {
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 2rem;
+    background-color: var(--white);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.main-contents h1 {
+    text-align: center;
+    color: var(--salon-brown);
+    margin-bottom: 2rem;
+}
+
+/* フォームの各要素 */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.label {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--salon-brown);
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.require {
+    color: #e53e3e;
+    /* 赤色 */
+    font-size: 0.875rem;
+    margin-left: 0.5rem;
+}
+
+.text,
+.textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1rem;
+    color: #4a5568;
+    transition: border-color 0.3s;
+}
+
+.text:focus,
+.textarea:focus {
+    outline: none;
+    border-color: var(--salon-gold);
+}
+
+.textarea {
+    resize: vertical;
+}
+
+.image {
+    cursor: pointer;
+}
+
+/* 入力エラーメッセージ */
+.input_error {
+    color: #e53e3e;
+    font-size: 0.875rem;
+    margin-top: -1rem;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.input_error_message {
+    margin: 0;
+}
+
+/* 画像プレビュー */
+.image_output {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    border: 1px dashed #e2e8f0;
+    border-radius: 8px;
+    padding: 1rem;
+    min-height: 120px;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.reader_file {
+    max-width: 150px;
+    max-height: 150px;
+    overflow: hidden;
+    border-radius: 8px;
+    border: 1px solid #cbd5e0;
+}
+
+.reader_image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* ボタンコンテナ */
+.button-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+/* 戻るボタン */
+.back {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background-color: #e2e8f0;
+    color: #4a5568;
+    border-radius: 9999px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background-color 0.2s;
+    text-align: center;
+}
+
+.back:hover {
+    background-color: #cbd5e0;
+}
+
+/* 登録ボタン */
+.button-register {
+    padding: 0.75rem 1.5rem;
+    background-color: var(--salon-gold);
+    color: var(--white);
+    border: none;
+    border-radius: 9999px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.button-register:hover {
+    background-color: #a38147;
+}
+
+/* レスポンシブデザイン */
+@media (max-width: 768px) {
+    .main-contents {
+        margin: 20px auto;
+        padding: 1rem;
+    }
+
+    .button-content {
+        flex-direction: column;
+    }
+
+    .back,
+    .button-register {
+        width: 100%;
+    }
+}

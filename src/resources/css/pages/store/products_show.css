@@ -1,0 +1,202 @@
+/* ページ全体のコンテナ */
+.all-contents {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 2rem;
+    background-color: var(--white);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* 上部コンテンツ（画像とフォーム）のレイアウト */
+.top-contents {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+/* 左側の画像コンテンツ */
+.left-content {
+    flex: 1;
+    min-width: 300px;
+}
+
+.img-content {
+    width: 100%;
+    padding-top: 75%;
+    /* 4:3のアスペクト比を維持 */
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background-color: #f7fafc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.reader_image,
+.img-content img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    /* 画像全体を表示 */
+    border-radius: 8px;
+}
+
+/* 右側のフォームコンテンツ */
+.right-content {
+    flex: 1;
+    min-width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* 入力フィールドとラベル */
+.name-label,
+.price-label,
+.image-label,
+.description-label {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--salon-brown);
+    margin-top: 0.5rem;
+}
+
+.text,
+.product-description,
+.image {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1rem;
+    color: #4a5568;
+    transition: border-color 0.3s;
+}
+
+.text:focus,
+.product-description:focus,
+.image:focus {
+    outline: none;
+    border-color: var(--salon-gold);
+}
+
+/* 入力エラーメッセージ */
+.input_error {
+    color: #e53e3e;
+    font-size: 0.875rem;
+    margin-top: -1rem;
+    margin-bottom: 1rem;
+}
+
+/* 下部コンテンツ（画像入力とボタン） */
+.under-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* ボタンコンテナ */
+.button-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+}
+
+/* 戻るボタン */
+.back {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background-color: #e2e8f0;
+    color: #4a5568;
+    border-radius: 9999px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.back:hover {
+    background-color: #cbd5e0;
+}
+
+/* 変更を保存ボタン */
+.button-change {
+    padding: 0.75rem 1.5rem;
+    background-color: var(--salon-gold);
+    color: var(--white);
+    border: none;
+    border-radius: 9999px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.button-change:hover {
+    background-color: #a38147;
+}
+
+/* ゴミ箱ボタン */
+.trash-can-content {
+    display: flex;
+    align-items: center;
+}
+
+.trash-can-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+}
+
+.img-trash-can {
+    width: 32px;
+    height: 32px;
+    transition: transform 0.2s;
+}
+
+.img-trash-can:hover {
+    transform: scale(1.1);
+}
+
+/* パンくずリスト風のテキスト */
+.span-item {
+    color: #a0aec0;
+}
+
+/* レスポンシブデザイン */
+@media (max-width: 768px) {
+    .all-contents {
+        margin: 20px auto;
+        padding: 1rem;
+    }
+
+    .top-contents {
+        flex-direction: column;
+    }
+
+    .left-content,
+    .right-content {
+        min-width: unset;
+        width: 100%;
+    }
+
+    .button-content {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .back,
+    .button-change {
+        width: 100%;
+        text-align: center;
+    }
+}

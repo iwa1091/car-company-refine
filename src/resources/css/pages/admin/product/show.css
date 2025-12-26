@@ -1,0 +1,273 @@
+/* /resources/css/pages/admin/product/show.css */
+/* =====================================================
+   Admin Product Show
+   ※ base/theme.css / base/global.css のトークンを使用
+===================================================== */
+
+/* ページ全体ラッパー */
+.admin-product-show-page {
+    min-height: 100vh;
+    background-color: var(--salon-beige);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 1.75rem 1rem 3rem;
+}
+
+/* 中央カードコンテナ */
+.admin-product-show-container {
+    width: 100%;
+    max-width: 720px;
+    background-color: var(--card-bg);
+    border-radius: 1.5rem;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-medium);
+    padding: 1.75rem 1.75rem 2.5rem;
+}
+
+/* タイトル */
+.admin-product-show-title {
+    font-family: var(--font-heading);
+    font-size: 1.8rem;
+    text-align: center;
+    color: var(--salon-brown);
+    margin-bottom: 1.75rem;
+}
+
+/* フラッシュメッセージ */
+.admin-product-show-flash {
+    text-align: center;
+    color: #2f7d4f;
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+}
+
+/* 商品情報ラッパー */
+.admin-product-show-main {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* 画像エリア */
+.admin-product-show-image-wrapper {
+    text-align: center;
+}
+
+.admin-product-show-image {
+    max-height: 360px;
+    width: 100%;
+    object-fit: contain;
+    border-radius: 0.9rem;
+    box-shadow: var(--shadow-soft);
+    background-color: var(--color-bg-soft);
+}
+
+/* 各情報ブロック */
+.admin-product-show-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.admin-product-show-label {
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--salon-brown);
+    margin: 0;
+}
+
+/* 共通値ボックス */
+.admin-product-show-value {
+    background-color: var(--color-bg-soft);
+    color: var(--salon-brown);
+    padding: 0.6rem 0.9rem;
+    border-radius: 0.7rem;
+    font-size: 0.95rem;
+}
+
+/* 価格専用 */
+.admin-product-show-price {
+    background-color: var(--color-bg-soft);
+    color: var(--color-accent);
+    font-weight: 700;
+    font-size: 1.1rem;
+    padding: 0.6rem 0.9rem;
+    border-radius: 0.7rem;
+}
+
+/* 説明用テキスト */
+.admin-product-show-description {
+    background-color: var(--color-bg-soft);
+    color: var(--salon-brown);
+    padding: 0.75rem 0.95rem;
+    border-radius: 0.7rem;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    white-space: pre-line;
+}
+
+/* ボタン群ラッパー */
+.admin-product-show-actions {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+/* 共通ボタン */
+.admin-product-show-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 130px;
+    padding: 0.55rem 1.5rem;
+    border-radius: 9999px;
+    border: none;
+    font-size: 0.9rem;
+    font-family: var(--font-ui);
+    cursor: pointer;
+    text-decoration: none;
+    transition:
+        background-color 0.15s ease,
+        transform 0.1s ease,
+        box-shadow 0.15s ease,
+        opacity 0.15s ease;
+}
+
+/* 一覧へ戻る */
+.admin-product-show-button--back {
+    background-color: #e5e5e5;
+    color: var(--salon-brown);
+}
+
+.admin-product-show-button--back:hover {
+    background-color: #d4d4d4;
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-1px);
+}
+
+/* 編集ボタン */
+.admin-product-show-button--edit {
+    background-color: var(--color-accent);
+    color: #fff;
+}
+
+.admin-product-show-button--edit:hover {
+    background-color: #b89a52;
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-1px);
+}
+
+/* 削除ボタン */
+.admin-product-show-button--delete {
+    background-color: #b43d3d;
+    color: #fff;
+}
+
+.admin-product-show-button--delete:hover {
+    background-color: #912f2f;
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-1px);
+}
+
+/* 編集＋削除の横並び */
+.admin-product-show-actions-right {
+    display: flex;
+    gap: 0.75rem;
+}
+
+/* ============================================
+   レスポンシブ
+============================================ */
+
+/* ■ PC（1024px〜） */
+@media (min-width: 1024px) {
+    .admin-product-show-page {
+        padding: 2.5rem 1.75rem 3.5rem;
+    }
+
+    .admin-product-show-container {
+        padding: 2.25rem 2.25rem 2.75rem;
+    }
+
+    .admin-product-show-title {
+        font-size: 1.95rem;
+    }
+}
+
+/* ■ タブレット（768px〜1023px） */
+@media (max-width: 1023px) and (min-width: 768px) {
+    .admin-product-show-page {
+        padding: 2rem 1.5rem 3rem;
+    }
+
+    .admin-product-show-container {
+        padding: 2rem 1.75rem 2.5rem;
+    }
+}
+
+/* ■ スマホ共通（〜767px） */
+@media (max-width: 767px) {
+    .admin-product-show-page {
+        padding: 1.5rem 0.75rem 2.75rem;
+    }
+
+    .admin-product-show-container {
+        padding: 1.5rem 1.1rem 2.1rem;
+        border-radius: 1.3rem;
+    }
+
+    .admin-product-show-title {
+        font-size: 1.5rem;
+        margin-bottom: 1.4rem;
+    }
+
+    .admin-product-show-actions {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+
+    .admin-product-show-actions-right {
+        justify-content: space-between;
+    }
+
+    .admin-product-show-button {
+        width: 100%;
+        min-width: 0;
+    }
+}
+
+/* ■ iPhone SE 想定（〜400px） */
+@media (max-width: 400px) {
+    .admin-product-show-page {
+        padding: 1.25rem 0.5rem 2.5rem;
+    }
+
+    .admin-product-show-container {
+        padding: 1.25rem 0.85rem 1.9rem;
+    }
+
+    .admin-product-show-title {
+        font-size: 1.4rem;
+    }
+
+    .admin-product-show-value,
+    .admin-product-show-price,
+    .admin-product-show-description {
+        font-size: 0.9rem;
+        padding: 0.55rem 0.8rem;
+    }
+
+    .admin-product-show-image {
+        max-height: 300px;
+    }
+
+    .admin-product-show-button {
+        font-size: 0.85rem;
+        padding: 0.5rem 1.1rem;
+    }
+}

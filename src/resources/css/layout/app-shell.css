@@ -1,0 +1,112 @@
+/* Custom Colors and Fonts - サイト全体で使用する色とフォントを定義 */
+:root {
+    --salon-brown: #3e2723;
+    --salon-gold: #fff1b5;
+    --salon-beige: #f5f5dc;
+    --salon-pink: #fbecec;
+    --white: #fff;
+    --white-80: rgba(255, 255, 255, 0.8);
+    --white-70: rgba(255, 255, 255, 0.7);
+    --white-60: rgba(255, 255, 255, 0.6);
+    --white-20: rgba(255, 255, 255, 0.2);
+}
+
+/* Base Styles - 基本的なHTML要素のスタイル設定 */
+body {
+    font-family: 'Zen Maru Gothic', sans-serif;
+    color: var(--salon-brown);
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    background-color: var(--salon-beige);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: 'Shippori Mincho', serif;
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+a {
+    text-decoration: none;
+    color: var(--salon-gold);
+    transition: color 0.2s ease-in-out;
+}
+
+
+p {
+    margin-bottom: 1rem;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* Layout Utilities - 共通のレイアウト要素 */
+.container {
+    max-width: 1280px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+/* Buttons - 共通ボタンのスタイル */
+.button {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    border-radius: 9999px;
+    /* Tailwindの丸みのあるボタンを模倣 */
+    font-weight: 500;
+    text-align: center;
+    border: 2px solid transparent;
+    transition: all 0.3s ease-in-out;
+}
+
+.button:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* Utility Classes - Tailwindの便利クラスを模倣 */
+.text-center {
+    text-align: center;
+}
+
+.mx-auto {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.mb-4 {
+    margin-bottom: 1rem;
+}
+
+.py-8 {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+.px-4 {
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+.text-white {
+    color: var(--white);
+}
+
+.bg-salon-brown {
+    background-color: var(--salon-brown);
+}
+
+.text-salon-gold {
+    color: var(--salon-gold);
+}

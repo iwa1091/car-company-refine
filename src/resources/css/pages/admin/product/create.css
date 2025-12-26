@@ -1,0 +1,266 @@
+/* /resources/css/pages/admin/product/create.css */
+/* =====================================================
+   Admin Product Create
+   ※ base/theme.css / base/global.css のトークンを使用
+===================================================== */
+
+/* ページ全体ラッパー */
+.admin-product-create-page {
+    min-height: 100vh;
+    background-color: var(--salon-beige);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 1.75rem 1rem 3rem;
+}
+
+/* 中央カード */
+.admin-product-create-container {
+    width: 100%;
+    max-width: 640px;
+    background-color: var(--card-bg);
+    border-radius: 1.5rem;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-medium);
+    padding: 1.75rem 1.5rem 2.25rem;
+}
+
+/* タイトル */
+.admin-product-create-title {
+    font-family: var(--font-heading);
+    font-size: 1.7rem;
+    text-align: center;
+    color: var(--salon-brown);
+    margin-bottom: 1.5rem;
+}
+
+/* フォーム本体 */
+.admin-product-create-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+}
+
+/* フォームグループ */
+.admin-product-create-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.admin-product-create-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--salon-brown);
+}
+
+/* 入力要素 */
+.admin-product-create-input,
+.admin-product-create-textarea {
+    width: 100%;
+    border-radius: 0.6rem;
+    border: 1px solid var(--border-color);
+    padding: 0.5rem 0.7rem;
+    font-size: 0.9rem;
+    background-color: #fff;
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.admin-product-create-input:focus,
+.admin-product-create-textarea:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 1px rgba(205, 175, 99, 0.2);
+}
+
+/* テキストエリア */
+.admin-product-create-textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+/* ファイル入力 */
+.admin-product-create-file {
+    border-radius: 0.6rem;
+    border: 1px solid var(--border-color);
+    padding: 0.55rem 0.7rem;
+    font-size: 0.9rem;
+    background-color: #fff;
+}
+
+/* エラー表示 */
+.admin-product-create-error {
+    font-size: 0.8rem;
+    color: #b43d3d;
+}
+
+/* プレビュー領域 */
+.admin-product-create-preview-wrapper {
+    margin-top: 0.75rem;
+    display: flex;
+    justify-content: center;
+}
+
+.admin-product-create-preview-inner {
+    max-width: 320px;
+    width: 100%;
+    background-color: var(--color-bg-soft);
+    border-radius: 0.75rem;
+    padding: 0.5rem;
+    box-shadow: var(--shadow-soft);
+}
+
+.admin-product-create-preview-image {
+    width: 100%;
+    max-height: 260px;
+    object-fit: contain;
+    border-radius: 0.5rem;
+    display: block;
+}
+
+/* ボタンエリア */
+.admin-product-create-actions {
+    margin-top: 1.75rem;
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+/* 共通ボタン */
+.admin-product-create-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    padding: 0.55rem 1.4rem;
+    border-radius: 0.8rem;
+    border: none;
+    font-size: 0.9rem;
+    font-family: var(--font-ui);
+    cursor: pointer;
+    transition:
+        background-color 0.15s ease,
+        transform 0.1s ease,
+        box-shadow 0.15s ease,
+        opacity 0.15s ease;
+}
+
+/* 戻るボタン */
+.admin-product-create-button--back {
+    background-color: #e5e5e5;
+    color: var(--salon-brown);
+}
+
+.admin-product-create-button--back:hover {
+    background-color: #d4d4d4;
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-1px);
+}
+
+/* 登録ボタン */
+.admin-product-create-button--submit {
+    background-color: var(--color-accent);
+    color: #fff;
+}
+
+.admin-product-create-button--submit:hover {
+    background-color: #b89a52;
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-1px);
+}
+
+.admin-product-create-button--submit[disabled] {
+    opacity: 0.7;
+    cursor: default;
+    box-shadow: none;
+    transform: none;
+}
+
+/* ============================================
+   レスポンシブ
+============================================ */
+
+/* ■ PC（1024px〜） */
+@media (min-width: 1024px) {
+    .admin-product-create-page {
+        padding: 2.5rem 1.5rem 3.5rem;
+    }
+
+    .admin-product-create-container {
+        padding: 2.25rem 2.25rem 2.75rem;
+    }
+
+    .admin-product-create-title {
+        font-size: 1.9rem;
+    }
+}
+
+/* ■ タブレット（768px〜1023px） */
+@media (max-width: 1023px) and (min-width: 768px) {
+    .admin-product-create-page {
+        padding: 2rem 1.5rem 3.25rem;
+    }
+
+    .admin-product-create-container {
+        padding: 2rem 1.75rem 2.5rem;
+    }
+}
+
+/* ■ スマホ共通（〜767px） */
+@media (max-width: 767px) {
+    .admin-product-create-page {
+        padding: 1.5rem 0.75rem 2.75rem;
+    }
+
+    .admin-product-create-container {
+        padding: 1.5rem 1.1rem 2.1rem;
+        border-radius: 1.3rem;
+    }
+
+    .admin-product-create-title {
+        font-size: 1.45rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .admin-product-create-actions {
+        flex-direction: column-reverse;
+    }
+
+    .admin-product-create-button {
+        width: 100%;
+        min-width: 0;
+    }
+}
+
+/* ■ iPhone SE 想定（〜400px） */
+@media (max-width: 400px) {
+    .admin-product-create-page {
+        padding: 1.25rem 0.5rem 2.5rem;
+    }
+
+    .admin-product-create-container {
+        padding: 1.25rem 0.85rem 1.8rem;
+    }
+
+    .admin-product-create-title {
+        font-size: 1.35rem;
+    }
+
+    .admin-product-create-input,
+    .admin-product-create-textarea,
+    .admin-product-create-file {
+        font-size: 0.85rem;
+        padding: 0.45rem 0.6rem;
+    }
+
+    .admin-product-create-preview-inner {
+        max-width: 280px;
+    }
+
+    .admin-product-create-button {
+        font-size: 0.85rem;
+        padding: 0.5rem 1.1rem;
+    }
+}

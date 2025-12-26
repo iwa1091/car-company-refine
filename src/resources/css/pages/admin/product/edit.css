@@ -1,0 +1,274 @@
+/* /resources/css/pages/admin/Product/edit.css */
+/* =====================================================
+   Admin Product Edit
+   ※ base/theme.css / base/global.css のトークンを使用
+===================================================== */
+
+/* ページ全体ラッパー */
+.admin-product-edit-page {
+    min-height: 100vh;
+    background-color: var(--salon-beige);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 1.75rem 1rem 3rem;
+}
+
+/* 中央カード */
+.admin-product-edit-container {
+    width: 100%;
+    max-width: 640px;
+    background-color: var(--card-bg);
+    border-radius: 1.5rem;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-medium);
+    padding: 1.75rem 1.5rem 2.25rem;
+}
+
+/* タイトル */
+.admin-product-edit-title {
+    font-family: var(--font-heading);
+    font-size: 1.7rem;
+    text-align: center;
+    color: var(--salon-brown);
+    margin-bottom: 1.5rem;
+}
+
+/* フラッシュメッセージ */
+.admin-product-edit-flash {
+    text-align: center;
+    color: #2f7d4f;
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin-bottom: 0.75rem;
+}
+
+/* フォーム */
+.admin-product-edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+}
+
+/* フォームグループ */
+.admin-product-edit-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.admin-product-edit-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--salon-brown);
+}
+
+/* 入力要素 */
+.admin-product-edit-input,
+.admin-product-edit-textarea {
+    width: 100%;
+    border-radius: 0.6rem;
+    border: 1px solid var(--border-color);
+    padding: 0.5rem 0.7rem;
+    font-size: 0.9rem;
+    background-color: #fff;
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.admin-product-edit-input:focus,
+.admin-product-edit-textarea:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 1px rgba(205, 175, 99, 0.2);
+}
+
+/* テキストエリア */
+.admin-product-edit-textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+/* エラー表示 */
+.admin-product-edit-error {
+    font-size: 0.8rem;
+    color: #b43d3d;
+}
+
+/* ファイル入力 */
+.admin-product-edit-file {
+    border-radius: 0.6rem;
+    border: 1px solid var(--border-color);
+    padding: 0.55rem 0.7rem;
+    font-size: 0.9rem;
+    background-color: #fff;
+}
+
+/* プレビュー領域 */
+.admin-product-edit-preview-wrapper {
+    margin-top: 0.75rem;
+    display: flex;
+    justify-content: center;
+}
+
+.admin-product-edit-preview-inner {
+    max-width: 320px;
+    width: 100%;
+    background-color: var(--color-bg-soft);
+    border-radius: 0.75rem;
+    padding: 0.5rem;
+    box-shadow: var(--shadow-soft);
+}
+
+.admin-product-edit-preview-image {
+    width: 100%;
+    max-height: 260px;
+    object-fit: contain;
+    border-radius: 0.5rem;
+    display: block;
+}
+
+/* ボタンエリア */
+.admin-product-edit-actions {
+    margin-top: 1.75rem;
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+/* 共通ボタン */
+.admin-product-edit-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    padding: 0.55rem 1.4rem;
+    border-radius: 0.8rem;
+    border: none;
+    font-size: 0.9rem;
+    font-family: var(--font-ui);
+    cursor: pointer;
+    transition:
+        background-color 0.15s ease,
+        transform 0.1s ease,
+        box-shadow 0.15s ease,
+        opacity 0.15s ease;
+}
+
+/* 戻るボタン */
+.admin-product-edit-button--back {
+    background-color: #e5e5e5;
+    color: var(--salon-brown);
+}
+
+.admin-product-edit-button--back:hover {
+    background-color: #d4d4d4;
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-1px);
+}
+
+/* 更新ボタン */
+.admin-product-edit-button--submit {
+    background-color: var(--color-accent);
+    color: #fff;
+}
+
+.admin-product-edit-button--submit:hover {
+    background-color: #b89a52;
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-1px);
+}
+
+.admin-product-edit-button--submit[disabled] {
+    opacity: 0.7;
+    cursor: default;
+    box-shadow: none;
+    transform: none;
+}
+
+/* ============================================
+   レスポンシブ
+============================================ */
+
+/* ■ PC（1024px〜） */
+@media (min-width: 1024px) {
+    .admin-product-edit-page {
+        padding: 2.5rem 1.5rem 3.5rem;
+    }
+
+    .admin-product-edit-container {
+        padding: 2.25rem 2.25rem 2.75rem;
+    }
+
+    .admin-product-edit-title {
+        font-size: 1.9rem;
+    }
+}
+
+/* ■ タブレット（768px〜1023px） */
+@media (max-width: 1023px) and (min-width: 768px) {
+    .admin-product-edit-page {
+        padding: 2rem 1.5rem 3.25rem;
+    }
+
+    .admin-product-edit-container {
+        padding: 2rem 1.75rem 2.5rem;
+    }
+}
+
+/* ■ スマホ共通（〜767px） */
+@media (max-width: 767px) {
+    .admin-product-edit-page {
+        padding: 1.5rem 0.75rem 2.75rem;
+    }
+
+    .admin-product-edit-container {
+        padding: 1.5rem 1.1rem 2.1rem;
+        border-radius: 1.3rem;
+    }
+
+    .admin-product-edit-title {
+        font-size: 1.45rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .admin-product-edit-actions {
+        flex-direction: column-reverse;
+    }
+
+    .admin-product-edit-button {
+        width: 100%;
+    }
+}
+
+/* ■ iPhone SE 想定（〜400px） */
+@media (max-width: 400px) {
+    .admin-product-edit-page {
+        padding: 1.25rem 0.5rem 2.5rem;
+    }
+
+    .admin-product-edit-container {
+        padding: 1.25rem 0.85rem 1.8rem;
+    }
+
+    .admin-product-edit-title {
+        font-size: 1.35rem;
+    }
+
+    .admin-product-edit-input,
+    .admin-product-edit-textarea,
+    .admin-product-edit-file {
+        font-size: 0.85rem;
+        padding: 0.45rem 0.6rem;
+    }
+
+    .admin-product-edit-preview-inner {
+        max-width: 280px;
+    }
+
+    .admin-product-edit-button {
+        font-size: 0.85rem;
+        padding: 0.5rem 1.1rem;
+    }
+}

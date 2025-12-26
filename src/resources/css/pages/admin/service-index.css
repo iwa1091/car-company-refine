@@ -1,0 +1,394 @@
+/* /resources/css/pages/admin/service-index.css */
+/* =====================================================
+   Admin Service Index (サービス一覧)
+   ※ base/theme.css / base/global.css のトークンを使用
+===================================================== */
+
+/* ページ全体ラッパー */
+.admin-service-page {
+    min-height: 100vh;
+    background-color: var(--background);
+    padding: 1.75rem 1rem 2.75rem;
+}
+
+/* 中央カードコンテナ */
+.admin-service-container {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    background-color: var(--card-bg);
+    border-radius: 1.2rem;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-medium);
+    padding: 1.75rem 1.5rem 2.25rem;
+}
+
+/* ================================
+   戻るボタン + ヘッダー
+================================ */
+
+/* 戻るボタンエリア */
+.service-back-area {
+    margin-bottom: 0.75rem;
+}
+
+/* 戻るボタン */
+.service-back-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.4rem 1.1rem;
+    font-size: 0.85rem;
+    font-family: var(--font-ui);
+    border-radius: 9999px;
+    border: 1px solid var(--border-color);
+    background-color: var(--color-bg-soft);
+    color: var(--salon-brown);
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+        background-color 0.15s ease,
+        box-shadow 0.15s ease,
+        transform 0.1s ease,
+        color 0.15s ease;
+}
+
+.service-back-button:hover {
+    background-color: var(--color-bg-light);
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-1px);
+}
+
+/* タイトル + 新規作成ボタン */
+.service-page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+/* タイトル */
+.service-page-title {
+    font-family: var(--font-heading);
+    font-size: 1.6rem;
+    color: var(--salon-brown);
+    margin: 0;
+}
+
+/* 新規作成ボタン */
+.service-create-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.45rem 1.4rem;
+    font-size: 0.9rem;
+    font-family: var(--font-ui);
+    border-radius: 9999px;
+    border: none;
+    background-color: var(--color-main);
+    color: #fff;
+    cursor: pointer;
+    text-decoration: none;
+    transition:
+        background-color 0.15s ease,
+        transform 0.1s ease,
+        box-shadow 0.15s ease;
+}
+
+.service-create-button:hover {
+    background-color: #385a47;
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-1px);
+}
+
+/* ================================
+   カテゴリフィルタ
+================================ */
+
+.service-filter {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.service-filter-label {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--salon-brown);
+}
+
+.service-filter-select {
+    min-width: 180px;
+    border-radius: 9999px;
+    border: 1px solid var(--border-color);
+    padding: 0.45rem 1rem;
+    font-size: 0.9rem;
+    background-color: #fff;
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.service-filter-select:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 1px rgba(205, 175, 99, 0.25);
+}
+
+/* ================================
+   テーブル
+================================ */
+
+/* テーブルラッパー（横スクロール） */
+.service-table-wrapper {
+    margin-top: 0.75rem;
+    background-color: var(--card-bg);
+    border-radius: var(--radius-base);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-soft);
+    overflow-x: auto;
+}
+
+/* テーブル本体 */
+.service-table {
+    width: 100%;
+    min-width: 960px;
+    /* スマホでは横スクロール前提 */
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.service-table thead {
+    background-color: var(--color-bg-soft);
+}
+
+.service-table th,
+.service-table td {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+    border-right: 1px solid var(--border-color);
+    text-align: left;
+    vertical-align: top;
+}
+
+.service-table th:last-child,
+.service-table td:last-child {
+    border-right: none;
+}
+
+.service-table th {
+    font-weight: 600;
+    color: var(--salon-brown);
+    white-space: nowrap;
+}
+
+.service-table tbody tr:nth-child(even) {
+    background-color: var(--color-bg-light);
+}
+
+.service-table tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* 特徴リスト */
+.service-features-list {
+    margin: 0;
+    padding-left: 1.1rem;
+}
+
+.service-features-list li {
+    margin-bottom: 0.15rem;
+}
+
+.service-features-empty {
+    color: rgba(0, 0, 0, 0.4);
+    font-size: 0.85rem;
+}
+
+/* 人気ラベル */
+.service-popular-label {
+    color: #b43d3d;
+    font-weight: 700;
+}
+
+.service-popular-empty {
+    color: rgba(0, 0, 0, 0.4);
+}
+
+/* 公開/非公開切り替えボタン */
+.service-active-toggle {
+    padding: 0.3rem 0.8rem;
+    border-radius: 9999px;
+    font-size: 0.85rem;
+    font-family: var(--font-ui);
+    border: none;
+    cursor: pointer;
+    transition:
+        background-color 0.15s ease,
+        color 0.15s ease,
+        transform 0.1s ease,
+        box-shadow 0.15s ease;
+}
+
+.service-active-toggle--active {
+    background-color: #16a34a;
+    color: #fff;
+}
+
+.service-active-toggle--inactive {
+    background-color: #e5e5e5;
+    color: #555;
+}
+
+.service-active-toggle:hover {
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-1px);
+}
+
+/* 操作リンク */
+.service-actions-cell {
+    white-space: nowrap;
+}
+
+.service-action-link {
+    font-size: 0.85rem;
+    text-decoration: none;
+    margin-right: 0.5rem;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+}
+
+.service-action-link:hover {
+    opacity: 0.7;
+}
+
+.service-action-link--edit {
+    color: #2563eb;
+}
+
+.service-action-link--delete {
+    color: #b91c1c;
+}
+
+/* ============================================
+   レスポンシブ
+============================================ */
+
+/* ■ PC（1024px〜） */
+@media (min-width: 1024px) {
+    .admin-service-page {
+        padding: 2.25rem 1.5rem 3rem;
+    }
+
+    .admin-service-container {
+        padding: 2rem 2.25rem 2.6rem;
+    }
+
+    .service-page-title {
+        font-size: 1.8rem;
+    }
+}
+
+/* ■ タブレット（768px〜1023px） */
+@media (max-width: 1023px) and (min-width: 768px) {
+    .admin-service-page {
+        padding: 2rem 1.25rem 2.75rem;
+    }
+
+    .admin-service-container {
+        padding: 1.75rem 1.75rem 2.4rem;
+    }
+
+    .service-table {
+        font-size: 0.9rem;
+        min-width: 900px;
+    }
+}
+
+/* ■ スマホ共通（〜767px） */
+@media (max-width: 767px) {
+    .admin-service-page {
+        padding: 1.5rem 0.75rem 2.5rem;
+    }
+
+    .admin-service-container {
+        padding: 1.4rem 1.1rem 2.1rem;
+        border-radius: 1rem;
+    }
+
+    .service-page-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+    }
+
+    .service-page-title {
+        font-size: 1.45rem;
+        text-align: left;
+    }
+
+    .service-create-button {
+        width: 100%;
+        justify-content: center;
+        font-size: 0.9rem;
+    }
+
+    .service-filter {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .service-filter-select {
+        width: 100%;
+    }
+
+    .service-table {
+        font-size: 0.85rem;
+        min-width: 880px;
+    }
+}
+
+/* ■ iPhone SE 想定（〜400px） */
+@media (max-width: 400px) {
+    .admin-service-page {
+        padding: 1.25rem 0.5rem 2.25rem;
+    }
+
+    .admin-service-container {
+        padding: 1.25rem 0.75rem 1.9rem;
+    }
+
+    .service-page-title {
+        font-size: 1.35rem;
+    }
+
+    .service-back-button {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.9rem;
+    }
+
+    .service-filter-label {
+        font-size: 0.85rem;
+    }
+
+    .service-filter-select {
+        font-size: 0.85rem;
+        padding: 0.4rem 0.9rem;
+    }
+
+    .service-table {
+        font-size: 0.8rem;
+        min-width: 820px;
+    }
+
+    .service-active-toggle {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.6rem;
+    }
+
+    .service-action-link {
+        font-size: 0.8rem;
+    }
+}

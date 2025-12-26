@@ -1,0 +1,222 @@
+/* =========================================================
+   Ohana Salon — Online Store (products_index.css)
+   配色：ベージュ × ブラウン × ゴールド
+========================================================= */
+
+/* --------------------------------
+   ページ全体
+-------------------------------- */
+.store-page {
+    background-color: var(--background);
+    padding: 3rem 1rem;
+}
+
+.store-container {
+    max-width: var(--container-max);
+    margin: 0 auto;
+}
+
+/* --------------------------------
+   ヘッダー
+-------------------------------- */
+.store-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.store-title {
+    font-family: var(--font-heading);
+    color: var(--text-default);
+    font-size: 2.3rem;
+    margin-bottom: 0.8rem;
+}
+
+.store-subtitle {
+    font-size: 1rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+}
+
+/* --------------------------------
+   検索 + 並び替え（改善済み）
+-------------------------------- */
+.search-sort-container {
+    background: var(--card-bg);
+    padding: 1.8rem;
+    border-radius: var(--radius-large);
+    box-shadow: var(--shadow-soft);
+    margin-bottom: 2.8rem;
+}
+
+.search-form {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+
+    /* PC時は余白を広めに（修正点） */
+    column-gap: 3rem;
+    row-gap: 1rem;
+}
+
+/* 入力欄の幅は均等 */
+.input-group {
+    flex: 1;
+    min-width: 240px;
+}
+
+.input-group input,
+.input-group select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    background: var(--color-white);
+    border-radius: var(--radius-base);
+    font-size: 0.95rem;
+    color: var(--text-default);
+}
+
+/* 検索ボタン */
+.search-button {
+    padding: 0.75rem 1.4rem;
+    font-size: 0.95rem;
+    border-radius: var(--radius-base);
+    background: var(--color-accent);
+    color: var(--color-white);
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: background 0.2s ease;
+}
+
+.search-button:hover {
+    background: #bfa258;
+}
+
+/* --------------------------------
+   商品グリッド
+-------------------------------- */
+.products-section {
+    margin-top: 2rem;
+}
+
+.product-grid {
+    display: grid;
+    gap: 1.8rem;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
+/* --------------------------------
+   商品カード
+-------------------------------- */
+.product-card {
+    background: var(--card-bg);
+    border-radius: var(--radius-large);
+    box-shadow: var(--shadow-soft);
+    overflow: hidden;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-medium);
+}
+
+.product-link {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+}
+
+.product-image-container {
+    width: 100%;
+    aspect-ratio: 1/1;
+    overflow: hidden;
+}
+
+.product-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* 商品情報 */
+.product-info {
+    padding: 1.2rem 1rem;
+}
+
+.product-name {
+    font-family: var(--font-heading);
+    font-size: 1.1rem;
+    margin-bottom: 0.4rem;
+    color: var(--text-default);
+}
+
+.product-description {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+}
+
+.product-price {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-default);
+}
+
+.product-stock {
+    margin-top: 0.4rem;
+    font-size: 0.85rem;
+}
+
+/* --------------------------------
+   ページネーション
+-------------------------------- */
+.pagination-content {
+    margin-top: 2.5rem;
+    text-align: center;
+}
+
+/* --------------------------------
+   レスポンシブ
+-------------------------------- */
+
+/* タブレット */
+@media (max-width: 1024px) {
+
+    .search-form {
+        column-gap: 1.5rem;
+    }
+
+    .product-grid {
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    }
+}
+
+/* スマホ（縦並び） */
+@media (max-width: 640px) {
+
+    /* 縦並びへ */
+    .search-form {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.9rem;
+    }
+
+    /* ★ スマホでのはみ出し防止（修正点） */
+    .input-group {
+        width: 85%;
+        min-width: 0;
+        /* ← これが超重要！はみ出し完全防止 */
+    }
+
+    .product-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .store-title {
+        font-size: 1.8rem;
+    }
+}

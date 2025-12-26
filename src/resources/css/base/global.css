@@ -1,0 +1,111 @@
+/* =======================================
+   Global Base Styles for Ohana Salon
+   ※ theme.css のデザイントークンをそのまま使用
+======================================= */
+
+/* ---------------------------------------
+   Base
+--------------------------------------- */
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-base);
+  line-height: 1.7;
+  font-size: 1.05rem;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* モバイルは文字を少し大きく（高齢者配慮） */
+@media (max-width: 768px) {
+  body {
+    font-size: 1.15rem;
+  }
+}
+
+/* ---------------------------------------
+   Typography
+--------------------------------------- */
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  color: var(--salon-brown);
+  margin: 0 0 1rem 0;
+  line-height: 1.3;
+}
+
+/* pタグの基本設定 */
+p {
+  margin: 0 0 1rem 0;
+}
+
+/* リンク */
+a {
+  color: var(--salon-brown);
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+a:hover {
+  opacity: 0.8;
+}
+
+/* ---------------------------------------
+   Reset / Elements
+--------------------------------------- */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+input,
+textarea,
+select {
+  font-family: var(--font-base);
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  color: var(--foreground);
+  padding: 0.4rem 0.6rem;
+}
+
+/* ---------------------------------------
+   Layout Utility
+--------------------------------------- */
+.oh-container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+/* ---------------------------------------
+   Utility Classes
+--------------------------------------- */
+.text-ohana-brown {
+  color: var(--salon-brown);
+}
+
+.bg-ohana-beige {
+  background-color: var(--salon-beige);
+}
+
+.ohana-card {
+  background: var(--card-bg);
+  border-radius: var(--radius-base);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-soft);
+  padding: 1.25rem;
+}

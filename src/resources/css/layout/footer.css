@@ -1,0 +1,211 @@
+/* =====================================================
+   Ohana Salon — Footer (Deep Green × Gold Premium)
+   新テーマに完全準拠した高級フッターデザイン
+===================================================== */
+
+/* =====================================================
+   Main Footer
+===================================================== */
+.main-footer {
+    background-color: var(--color-main);
+    /* 深いボタニカルグリーン */
+    color: var(--color-white);
+    font-family: var(--font-ui);
+    padding-top: 3rem;
+    padding-bottom: 2rem;
+    box-shadow: inset 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+/* =====================================================
+   Container
+===================================================== */
+.footer-container {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 0 1.2rem;
+}
+
+/* =====================================================
+   Footer Grid
+===================================================== */
+.footer-grid {
+    display: grid;
+    gap: 2rem;
+    grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+    .footer-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 2.5rem;
+    }
+}
+
+/* =====================================================
+   Salon Branding（Logo + About）
+===================================================== */
+.salon-name {
+    font-family: var(--font-heading);
+    /* handwriting → heading に統一 */
+    font-size: 1.6rem;
+    color: var(--color-accent);
+    /* ゴールド */
+    margin-bottom: 0.7rem;
+    letter-spacing: 0.07em;
+    line-height: 1.4;
+}
+
+.salon-description {
+    font-family: var(--font-base);
+    font-size: 0.93rem;
+    line-height: 1.75;
+    margin-bottom: 1.1rem;
+    color: rgba(255, 255, 255, 0.88);
+}
+
+/* =====================================================
+   SNS Icons
+===================================================== */
+.social-links {
+    display: flex;
+    gap: 0.7rem;
+}
+
+.social-link {
+    padding: 0.4rem;
+    border-radius: var(--radius-full);
+    background-color: rgba(255, 224, 170, 0.16);
+    transition: 0.25s ease;
+    display: inline-flex;
+}
+
+.social-link:hover {
+    background-color: rgba(255, 224, 170, 0.28);
+    transform: translateY(-2px);
+}
+
+.footer-sns-icon {
+    width: 1.35rem;
+    height: 1.35rem;
+}
+
+/* =====================================================
+   Footer Headings（Menu / Contact / Hours）
+===================================================== */
+.footer-menu-heading,
+.footer-contact-heading,
+.footer-hours-heading {
+    font-family: var(--font-heading);
+    font-size: 1.1rem;
+    margin-bottom: 0.9rem;
+    color: var(--color-accent);
+    letter-spacing: 0.03em;
+}
+
+/* =====================================================
+   Navigation Links
+===================================================== */
+.footer-nav-link {
+    display: block;
+    font-family: var(--font-ui);
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.78);
+    padding: 0.28rem 0;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.footer-nav-link:hover,
+.footer-nav-link.is-active {
+    color: var(--color-accent);
+}
+
+/* =====================================================
+   Contact Info
+===================================================== */
+.contact-info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-bottom: 0.55rem;
+    font-family: var(--font-base);
+    font-size: 0.92rem;
+    color: rgba(255, 255, 255, 0.86);
+}
+
+.footer-icon {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* 住所が複数行の場合 */
+.address-item .contact-text {
+    line-height: 1.55;
+}
+
+/* =====================================================
+   Business Hours
+===================================================== */
+.hours-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    font-size: 0.92rem;
+    font-family: var(--font-base);
+    color: rgba(255, 255, 255, 0.88);
+}
+
+.hours-item {
+    display: flex;
+    justify-content: space-between;
+}
+
+@media (max-width: 480px) {
+    .hours-item {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+}
+
+/* =====================================================
+   Copyright Section
+===================================================== */
+.footer-copyright-section {
+    border-top: 1px solid rgba(255, 255, 255, 0.22);
+    margin-top: 3rem;
+    padding-top: 1.3rem;
+}
+
+.copyright-container {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 0 1.2rem;
+}
+
+.copyright-content {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    gap: 0.6rem;
+    font-size: 0.85rem;
+    font-family: var(--font-ui);
+    color: rgba(255, 255, 255, 0.75);
+}
+
+@media (min-width: 768px) {
+    .copyright-content {
+        flex-direction: row;
+        justify-content: space-between;
+        text-align: left;
+    }
+}
+
+.legal-link {
+    color: rgba(255, 255, 255, 0.75);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.legal-link:hover {
+    color: var(--color-accent);
+}

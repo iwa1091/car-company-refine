@@ -1,0 +1,73 @@
+/* ======================================================
+   Ohana Salon — Global Design Tokens (theme.css)
+   このファイルはサイト全体のデザイン基準を統一します。
+   ※ 他のCSSはこの変数を参照し、上書きしません。
+====================================================== */
+
+/* Google Fonts Import */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;500;600&family=Shippori+Mincho:wght@400;600&family=Raleway:wght@400;500;600&display=swap');
+
+:root {
+    /* Font Family */
+    --font-base: 'Noto Serif JP', serif;
+    --font-heading: 'Shippori Mincho', serif;
+    --font-ui: 'Raleway', sans-serif;
+
+    /* Text */
+    --text-default: #3A2F29;
+    --foreground: var(--text-default);
+
+    /* Color Palette */
+    --color-bg-base: #F1F1EF;
+    --color-main: #2F4F3E;
+    --color-accent: #CDAF63;
+    --color-sub-accent: #D7C9A4;
+
+    --color-white: #ffffff;
+
+    /* Extra Soft Palette（新しい上質カラー） */
+    --color-bg-light: #F7F6F2;
+    /* 柔らかいライトベージュ */
+    --color-bg-soft: #F4EFE7;
+    /* やさしい薄いベージュ */
+    --color-divider-soft: rgba(0, 0, 0, 0.06);
+    /* 上品な淡い仕切り線 */
+    --color-accent-soft: #E5D7A8;
+    /* 柔らかいソフトゴールド */
+
+    /* Global alias（global.css 互換用）*/
+    --salon-brown: var(--text-default);
+    --salon-white: var(--color-white);
+    --salon-beige: var(--color-bg-base);
+
+    /* Background */
+    --background: var(--color-bg-base);
+    --card-bg: var(--color-white);
+
+    /* Border */
+    --border-color: rgba(0, 0, 0, 0.1);
+    --border-color-strong: rgba(0, 0, 0, 0.2);
+
+    /* Radius */
+    --radius-base: 8px;
+    --radius-large: 12px;
+    --radius-full: 9999px;
+
+    /* Shadow */
+    --shadow-soft: 0 10px 20px rgba(0, 0, 0, 0.08);
+    --shadow-medium: 0 15px 25px rgba(0, 0, 0, 0.12);
+
+    /* Spacing */
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 1rem;
+    --space-lg: 2rem;
+    --space-xl: 3rem;
+
+    --container-max: 1280px;
+
+    /* Z-index */
+    --z-header: 999;
+    --z-menu: 10000;
+    --z-modal: 20000;
+}

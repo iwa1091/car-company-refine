@@ -1,0 +1,327 @@
+/* /resources/css/pages/admin/user-list.css */
+/* =====================================================
+   Admin User List (顧客一覧)
+   ※ base/theme.css / base/global.css のトークンを使用
+===================================================== */
+
+/* ページ全体コンテナ */
+.admin-page-container {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 1.75rem 1rem 2.75rem;
+    background-color: var(--background);
+}
+
+/* ================================
+   ヘッダー（戻るボタン + タイトル）
+   → 戻るボタンの下に「顧客一覧」が来るレイアウト
+================================ */
+.page-header {
+    display: flex;
+    flex-direction: column;
+    /* ← 縦並びに変更 */
+    align-items: flex-start;
+    /* 左寄せ */
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+/* タイトル */
+.page-title {
+    font-family: var(--font-heading);
+    font-size: 1.6rem;
+    color: var(--salon-brown);
+    margin: 0;
+    /* ヘッダー側で余白管理 */
+}
+
+/* 戻るボタン */
+.back-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.4rem 1.2rem;
+    font-size: 0.85rem;
+    font-family: var(--font-ui);
+    border-radius: 9999px;
+    border: 1px solid var(--border-color);
+    background-color: var(--color-bg-soft);
+    color: var(--salon-brown);
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+        background-color 0.15s ease,
+        box-shadow 0.15s ease,
+        transform 0.1s ease,
+        color 0.15s ease;
+}
+
+.back-button:hover {
+    background-color: var(--color-bg-light);
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-1px);
+}
+
+/* ================================
+   検索フォーム
+================================ */
+.search-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    margin-bottom: 1.25rem;
+}
+
+.search-input {
+    flex: 1 1 220px;
+    min-width: 0;
+    border-radius: 9999px;
+    border: 1px solid var(--border-color);
+    padding: 0.45rem 0.9rem;
+    font-size: 0.9rem;
+    background-color: #fff;
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 1px rgba(205, 175, 99, 0.2);
+}
+
+.search-button {
+    border-radius: 9999px;
+    border: none;
+    padding: 0.45rem 1.4rem;
+    font-size: 0.9rem;
+    font-family: var(--font-ui);
+    background-color: var(--color-main);
+    color: #fff;
+    cursor: pointer;
+    transition:
+        background-color 0.15s ease,
+        transform 0.1s ease,
+        box-shadow 0.15s ease;
+}
+
+.search-button:hover {
+    background-color: #385a47;
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-1px);
+}
+
+/* ================================
+   テーブル
+================================ */
+
+/* テーブルラッパー */
+.table-container {
+    margin-top: 0.75rem;
+    background-color: var(--card-bg);
+    border-radius: var(--radius-base);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-soft);
+    overflow-x: auto;
+}
+
+/* テーブル本体 */
+.user-table {
+    width: 100%;
+    min-width: 900px;
+    /* スマホでは横スクロール前提 */
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.user-table thead {
+    background-color: var(--color-bg-soft);
+}
+
+.user-table th,
+.user-table td {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+    text-align: left;
+    vertical-align: top;
+}
+
+.user-table th {
+    font-weight: 600;
+    color: var(--salon-brown);
+    white-space: nowrap;
+}
+
+.user-table tbody tr:nth-child(even) {
+    background-color: var(--color-bg-light);
+}
+
+.user-table tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* メモセルは折り返し可 */
+.memo-cell {
+    max-width: 260px;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* 共通センタリング（フッタ用） */
+.text-center {
+    text-align: center;
+}
+
+/* ================================
+   ページネーション
+================================ */
+
+.pagination {
+    margin-top: 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.4rem;
+}
+
+.pagination-link {
+    min-width: 2.1rem;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.85rem;
+    border-radius: 9999px;
+    border: 1px solid var(--border-color);
+    background-color: #fff;
+    color: var(--salon-brown);
+    cursor: pointer;
+    font-family: var(--font-ui);
+    transition:
+        background-color 0.15s ease,
+        color 0.15s ease,
+        box-shadow 0.15s ease,
+        transform 0.1s ease,
+        opacity 0.15s ease;
+}
+
+.pagination-link:hover:not(:disabled) {
+    background-color: var(--color-bg-soft);
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-1px);
+}
+
+.pagination-link:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.pagination-link.active {
+    background-color: var(--color-accent);
+    border-color: var(--color-accent);
+    color: #fff;
+}
+
+/* ============================================
+   レスポンシブ
+============================================ */
+
+/* ■ PC（1024px〜） */
+@media (min-width: 1024px) {
+    .admin-page-container {
+        padding: 2.25rem 1.25rem 3rem;
+    }
+
+    .page-title {
+        font-size: 1.8rem;
+    }
+}
+
+/* ■ タブレット（768px〜1023px） */
+@media (max-width: 1023px) and (min-width: 768px) {
+    .admin-page-container {
+        padding: 2rem 1rem 2.75rem;
+    }
+
+    .user-table {
+        font-size: 0.9rem;
+    }
+}
+
+/* ■ スマホ共通（〜767px） */
+@media (max-width: 767px) {
+    .admin-page-container {
+        padding: 1.5rem 0.75rem 2.5rem;
+    }
+
+    .page-header {
+        /* すでに column なので方向はそのまま */
+        align-items: stretch;
+        gap: 0.5rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .page-title {
+        font-size: 1.4rem;
+    }
+
+    .back-button {
+        width: 100%;
+        justify-content: center;
+        font-size: 0.85rem;
+        padding: 0.45rem 1rem;
+    }
+
+    .search-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-input {
+        flex: 1 1 auto;
+    }
+
+    .search-button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .table-container {
+        margin-top: 1rem;
+    }
+
+    .pagination {
+        gap: 0.3rem;
+    }
+}
+
+/* ■ iPhone SE 想定（〜400px） */
+@media (max-width: 400px) {
+    .admin-page-container {
+        padding: 1.25rem 0.5rem 2.25rem;
+    }
+
+    .page-title {
+        font-size: 1.3rem;
+    }
+
+    .back-button {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.9rem;
+    }
+
+    .search-input,
+    .search-button {
+        font-size: 0.85rem;
+        padding: 0.45rem 0.7rem;
+    }
+
+    .user-table {
+        font-size: 0.85rem;
+        min-width: 820px;
+    }
+
+    .pagination-link {
+        font-size: 0.8rem;
+        padding: 0.3rem 0.6rem;
+    }
+}

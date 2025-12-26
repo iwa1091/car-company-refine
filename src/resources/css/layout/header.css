@@ -1,0 +1,312 @@
+/* =====================================================
+   Ohana Salon — Header (New Theme + Responsive)
+   ※ theme.css のデザイントークンを100%使用
+===================================================== */
+
+/* =====================================================
+   Header Layout — Sticky + Soft Shadow
+===================================================== */
+.main-header {
+    position: sticky;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: var(--z-header);
+    background-color: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    box-shadow: var(--shadow-soft);
+}
+
+.main-header+* {
+    margin-top: 0;
+}
+
+/* =====================================================
+   Header Container
+===================================================== */
+.header-container {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 0 var(--space-md);
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 4.5rem;
+}
+
+/* =====================================================
+   Logo
+===================================================== */
+.header-logo-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+    transition: opacity 0.2s ease;
+}
+
+.header-logo-link:hover {
+    opacity: 0.85;
+}
+
+.site-title {
+    font-family: var(--font-heading);
+    /* handwriting → heading に統一 */
+    font-size: 1.45rem;
+    letter-spacing: 0.06em;
+    color: var(--color-accent);
+}
+
+/* =====================================================
+   Desktop — Nav + SNS
+===================================================== */
+.desktop-right-group {
+    display: none;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+    .desktop-right-group {
+        display: flex;
+    }
+}
+
+.desktop-nav {
+    display: none;
+    align-items: center;
+    gap: 1.8rem;
+}
+
+@media (min-width: 768px) {
+    .desktop-nav {
+        display: flex;
+    }
+}
+
+.nav-link {
+    position: relative;
+    font-family: var(--font-ui);
+    font-size: 0.9rem;
+    color: var(--color-gray);
+    text-decoration: none;
+    padding-bottom: 0.2rem;
+    letter-spacing: 0.04em;
+    transition: color 0.15s ease;
+}
+
+.nav-link:hover {
+    color: var(--color-accent);
+}
+
+.nav-link::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -0.15rem;
+    width: 0;
+    height: 2px;
+    background-color: var(--color-accent);
+    transition: width 0.25s ease;
+}
+
+.nav-link:hover::after,
+.nav-link.is-active::after {
+    width: 100%;
+}
+
+/* =====================================================
+   Desktop SNS Icons
+===================================================== */
+.sns-icon-link {
+    display: inline-flex;
+    padding: 0.25rem;
+    border-radius: var(--radius-full);
+    transition: 0.2s ease;
+}
+
+.sns-icon {
+    width: 1.6rem;
+    height: 1.6rem;
+    color: var(--color-gray);
+}
+
+.sns-icon-link:hover {
+    background-color: rgba(0, 0, 0, 0.07);
+}
+
+/* =====================================================
+   Mobile Utility
+===================================================== */
+.mobile-only {
+    display: inline-flex;
+}
+
+@media (min-width: 768px) {
+    .mobile-only {
+        display: none;
+    }
+}
+
+[x-cloak] {
+    display: none !important;
+}
+
+/* =====================================================
+   Mobile Toggle Button
+===================================================== */
+.menu-toggle-button {
+    position: fixed;
+    top: 0.75rem;
+    right: 0.75rem;
+    z-index: var(--z-menu);
+    padding: 0.45rem;
+    border-radius: var(--radius-full);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    background-color: var(--color-white-90);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+@media (min-width: 768px) {
+    .menu-toggle-button {
+        position: static;
+        top: auto;
+        right: auto;
+        z-index: auto;
+    }
+}
+
+.menu-toggle-button:hover {
+    background-color: var(--color-light-gray);
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-1px);
+}
+
+/* Close button */
+.menu-close-button {
+    padding: 0.45rem;
+    border-radius: var(--radius-full);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    background-color: var(--color-white-90);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+.menu-close-button:hover {
+    background-color: var(--color-light-gray);
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-1px);
+}
+
+.menu-toggle-button:focus-visible,
+.menu-close-button:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+.icon-menu,
+.icon-close {
+    width: 1.55rem;
+    height: 1.55rem;
+    color: var(--color-gray);
+}
+
+/* =====================================================
+   Mobile Menu Overlay
+===================================================== */
+.mobile-menu-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    z-index: var(--z-menu);
+    overflow-y: auto;
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* =====================================================
+   Mobile Drawer
+===================================================== */
+.mobile-menu {
+    width: 100%;
+    max-width: 18rem;
+    background: var(--color-white);
+    height: 100%;
+    padding: 1rem 1.25rem 2rem;
+    box-shadow: -4px 0 18px rgba(0, 0, 0, 0.18);
+    display: flex;
+    flex-direction: column;
+}
+
+/* =====================================================
+   Mobile Logo
+===================================================== */
+.mobile-logo-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0.5rem 0 1.5rem;
+}
+
+.mobile-logo {
+    height: 2.2rem;
+    width: auto;
+    border-radius: var(--radius-full);
+    box-shadow: var(--shadow-soft);
+}
+
+.site-title-mobile {
+    font-family: var(--font-heading);
+    /* handwriting → heading に統一 */
+    font-size: 1.3rem;
+    letter-spacing: 0.08em;
+    color: var(--color-accent);
+}
+
+/* =====================================================
+   Mobile Navigation
+===================================================== */
+.mobile-nav-list {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.mobile-nav-link {
+    font-family: var(--font-ui);
+    font-size: 0.95rem;
+    padding: 0.65rem 0.75rem;
+    border-radius: var(--radius-base);
+    color: var(--color-gray);
+    text-decoration: none;
+    transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.mobile-nav-link:hover {
+    background-color: rgba(205, 175, 99, 0.12);
+    transform: translateX(2px);
+}
+
+.mobile-nav-link.is-active {
+    background-color: rgba(205, 175, 99, 0.2);
+    font-weight: 600;
+}
+
+/* =====================================================
+   Mobile SNS
+===================================================== */
+.mobile-sns {
+    display: flex;
+    gap: 1rem;
+    margin: 0.5rem 0 1rem;
+}

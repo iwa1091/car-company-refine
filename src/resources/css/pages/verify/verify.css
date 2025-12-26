@@ -1,0 +1,130 @@
+/* ===========================
+    verify.css - メール認証ページ用（最終版）
+    theme.css と完全連携
+=========================== */
+
+/* ページ全体 */
+.verify-page {
+    background-color: var(--color-bg-base);
+    padding: 6rem 1rem;
+    font-family: var(--font-base);
+    color: var(--text-default);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* コンテナ */
+.verify-container {
+    max-width: 600px;
+    width: 100%;
+    margin: auto;
+    background-color: var(--card-bg);
+    border-radius: var(--radius-large);
+    box-shadow: var(--shadow-soft);
+    padding: 2.5rem;
+    text-align: center;
+}
+
+/* タイトル */
+.page__title {
+    font-size: 2rem;
+    font-family: var(--font-heading);
+    font-weight: bold;
+    color: var(--salon-brown);
+    margin-bottom: 1.5rem;
+}
+
+/* コンテンツ内部 */
+.verify-content {
+    margin-top: 2rem;
+}
+
+.verify-text {
+    font-size: 1.05rem;
+    line-height: 1.7;
+    margin-bottom: 2rem;
+}
+
+/* ボタン */
+.btn--big {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border: none;
+    border-radius: var(--radius-base);
+    cursor: pointer;
+    background-color: var(--color-accent);
+    color: var(--salon-white);
+    transition: 0.2s ease;
+    box-shadow: var(--shadow-soft);
+}
+
+.btn--big:hover {
+    background-color: var(--color-accent-soft);
+}
+
+/* アラートメッセージ */
+.alert {
+    padding: 1rem;
+    border-radius: var(--radius-base);
+    margin-bottom: 2rem;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.alert--success {
+    background-color: var(--success-bg);
+    color: var(--success-color);
+}
+
+/* =======================================================
+   ▼ レスポンシブ最適化
+======================================================= */
+
+/* タブレット（768px 以下） */
+@media (max-width: 768px) {
+    .verify-page {
+        padding: 4rem 1rem;
+    }
+
+    .verify-container {
+        padding: 2rem 1.5rem;
+    }
+
+    .page__title {
+        font-size: 1.85rem;
+    }
+
+    .verify-text {
+        font-size: 1.1rem;
+    }
+
+    .btn--big {
+        font-size: 1.05rem;
+        padding: 0.9rem;
+    }
+}
+
+/* スマホ（480px 以下） */
+@media (max-width: 480px) {
+    .verify-container {
+        padding: 1.8rem 1.25rem;
+    }
+
+    .page__title {
+        font-size: 1.6rem;
+    }
+
+    .verify-text {
+        font-size: 1rem;
+        line-height: 1.6;
+    }
+
+    .btn--big {
+        font-size: 1rem;
+        padding: 0.85rem;
+    }
+}

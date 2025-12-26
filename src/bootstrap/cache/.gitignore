@@ -1,0 +1,7 @@
+# .gitignore（抜粋）
+/vendor/
+/node_modules/
+/storage/*.key
+.env
+# MySQLのDockerボリュームを除外
+docker/mysql/data/

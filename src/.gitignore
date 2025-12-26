@@ -1,0 +1,40 @@
+# ログファイルやOSの一時ファイル
+*.log
+.DS_Store
+Thumbs.db
+
+# 環境設定ファイル
+.env
+.env.backup
+.env.production
+auth.json
+
+# PHPツール関連
+.phpactor.json
+.phpunit.result.cache
+/.phpunit.cache
+
+# エディタ・IDEの設定ファイル
+/.idea
+/.vscode
+/.fleet
+/.nova
+/.zed
+
+# Node.js関連
+/node_modules
+/public/build
+/public/hot
+
+# Laravelのストレージと依存
+/public/storage
+/storage/*.key
+/storage/pail
+/vendor
+
+# Homestead
+Homestead.json
+Homestead.yaml
+
+# Docker関連（MySQLのデータを除外）
+docker/mysql/data/

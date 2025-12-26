@@ -1,0 +1,311 @@
+/* =========================================================
+   gallery.css — Lash Brow Ohana（ギャラリー専用）
+   配色：ベージュ × ゴールド × ブラウン
+   緑（--color-main）と深緑系の文字色は一切使用しない
+========================================================= */
+
+/* --------------------------------
+   ページ全体
+-------------------------------- */
+.gallery-page-container {
+    background-color: var(--color-bg-base);
+    padding: 3rem 1.5rem;
+    font-family: var(--font-base);
+    color: var(--text-default);
+}
+
+/* --------------------------------
+   ページヘッダー
+-------------------------------- */
+.header-section {
+    text-align: center;
+    margin-bottom: 4rem;
+}
+
+.page-title {
+    font-family: var(--font-heading);
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--text-default);
+    margin-bottom: 1rem;
+}
+
+.page-description {
+    font-size: 1rem;
+    line-height: 1.75;
+    color: var(--text-muted);
+    max-width: 720px;
+    margin: 0 auto;
+}
+
+/* --------------------------------
+   カード共通
+-------------------------------- */
+.card {
+    background-color: var(--color-white);
+    border-radius: var(--radius-large);
+    box-shadow: var(--shadow-soft);
+    overflow: hidden;
+    transition: transform .25s ease, box-shadow .25s ease;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-medium);
+}
+
+.card-content {
+    padding: 1.5rem;
+}
+
+.card-title {
+    font-family: var(--font-heading);
+    font-size: 1.2rem;
+    color: var(--text-default);
+    margin-bottom: 0.6rem;
+}
+
+.card-description {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--text-default);
+}
+
+/* =========================================================
+    Before / After セクション
+========================================================= */
+.grid-case {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 2rem;
+    margin-bottom: 4rem;
+}
+
+.card-grid-images {
+    display: flex;
+    gap: 0.75rem;
+}
+
+@media (max-width: 767px) {
+    .card-grid-images {
+        flex-direction: column;
+    }
+}
+
+.image-container {
+    position: relative;
+    flex: 1;
+}
+
+.image-card {
+    width: 100%;
+    border-radius: var(--radius-base);
+    display: block;
+    object-fit: cover;
+    object-position: top;
+    /* ← 顔が切れにくく調整 */
+}
+
+/* バッジ共通 */
+.badge {
+    position: absolute;
+    top: 0.75rem;
+    padding: 0.35rem 0.9rem;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-family: var(--font-ui);
+    color: var(--color-white);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+    /* ← 視認性UP */
+}
+
+/* Before → ブラウン */
+.badge-before {
+    left: 0.75rem;
+    background-color: var(--text-default);
+}
+
+/* After → ゴールド */
+.badge-after {
+    right: 0.75rem;
+    background-color: var(--color-accent);
+}
+
+/* =========================================================
+    Gallery Grid
+========================================================= */
+.grid-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 1.8rem;
+    margin-bottom: 4rem;
+}
+
+@media (max-width: 1024px) {
+    .grid-gallery {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    .grid-gallery {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+}
+
+/* ラッシュ → ゴールド */
+.badge-lash {
+    background-color: var(--color-accent);
+}
+
+/* ブロウ → ブラウン */
+.badge-brow {
+    background-color: var(--text-default);
+}
+
+/* =========================================================
+    Customer Reviews
+========================================================= */
+.grid-reviews {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-bottom: 4rem;
+}
+
+@media (max-width: 768px) {
+    .grid-reviews {
+        grid-template-columns: 1fr;
+    }
+}
+
+.card-review {
+    padding: 1.6rem;
+}
+
+/* レビューヘッダー */
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.review-name-age {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-default);
+}
+
+.review-age {
+    margin-left: 0.4rem;
+    color: var(--text-muted);
+}
+
+/* 星（横並び） */
+.review-rating {
+    display: flex;
+    gap: 0.25rem;
+    align-items: center;
+    margin-top: 0.4rem;
+}
+
+.star {
+    width: 1.1rem;
+    height: 1.1rem;
+}
+
+.quote {
+    width: 1.4rem;
+    height: 1.4rem;
+    opacity: 0.5;
+}
+
+.review-comment {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--text-default);
+    margin-bottom: 1rem;
+}
+
+.review-details {
+    font-size: 0.8rem;
+    display: flex;
+    justify-content: space-between;
+    color: var(--text-muted);
+}
+
+/* 注記テキスト（Googleマップ口コミ要約） */
+.review-note {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    max-width: 720px;
+    margin: 0 auto 2rem auto;
+}
+
+/* =========================================================
+   Stats（満足度エリア）
+========================================================= */
+.section-stats {
+    background-color: var(--text-default);
+    color: var(--color-white);
+    padding: 4rem 1.5rem;
+    text-align: center;
+    border-radius: var(--radius-large);
+}
+
+.stats-container {
+    max-width: 960px;
+    margin: 0 auto;
+}
+
+.section-title {
+    font-size: 2rem;
+    color: var(--color-white);
+}
+
+.stats-grid {
+    display: flex;
+    justify-content: space-evenly;
+    flex-wrap: wrap;
+    gap: 2rem;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--color-accent);
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: var(--color-white);
+}
+
+/* =========================================================
+   スマホ最適化
+========================================================= */
+@media (max-width: 767px) {
+
+    .gallery-page-container {
+        padding: 2rem 1rem;
+    }
+
+    .page-title {
+        font-size: 1.7rem;
+    }
+
+    .card-content {
+        padding: 1.2rem;
+    }
+
+    .stat-value {
+        font-size: 1.6rem;
+    }
+}

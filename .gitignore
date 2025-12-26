@@ -1,0 +1,68 @@
+# =========================================================
+# Root (Docker Compose / secrets)
+# =========================================================
+.env
+.env.*
+!.env.example
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# =========================================================
+# Docker / Local data (do NOT commit)
+# =========================================================
+docker/mysql/data/
+docker/mysql/data/**
+docker/ngrok/
+docker/ngrok/**
+
+# =========================================================
+# Laravel (src)
+# =========================================================
+src/.env
+src/.env.*
+!src/.env.example
+
+src/vendor/
+src/node_modules/
+
+# Laravel caches / runtime
+src/bootstrap/cache/*
+!src/bootstrap/cache/.gitignore
+
+src/storage/*
+!src/storage/.gitignore
+!src/storage/app/.gitignore
+!src/storage/app/public/.gitignore
+
+# =========================================================
+# Frontend build artifacts (Vite)
+# =========================================================
+src/public/build/
+src/public/hot
+
+# Optional: if you generate these locally
+src/public/storage
+
+# =========================================================
+# Test / coverage
+# =========================================================
+src/coverage/
+src/.phpunit.result.cache
+
+# =========================================================
+# Misc
+# =========================================================
+*.cache

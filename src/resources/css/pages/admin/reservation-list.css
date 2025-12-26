@@ -1,0 +1,281 @@
+/* /resources/css/pages/admin/reservation-list.css */
+/* =====================================================
+   Admin Reservation List
+   ※ base/theme.css / base/global.css のトークンを使用
+===================================================== */
+
+/* ページ全体 */
+.admin-reservation-page {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 1.5rem 1rem 2.5rem;
+}
+
+/* 読み込み中 */
+.admin-reservation-loading {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: rgba(0, 0, 0, 0.6);
+    font-size: 0.95rem;
+}
+
+/* 戻るボタン */
+.admin-reservation-back {
+    margin-bottom: 1rem;
+}
+
+.admin-reservation-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.85rem;
+    border-radius: 9999px;
+    border: 1px solid var(--border-color);
+    background-color: var(--color-bg-soft);
+    color: var(--salon-brown);
+    text-decoration: none;
+    transition:
+        background-color 0.15s ease,
+        box-shadow 0.15s ease,
+        transform 0.1s ease;
+}
+
+.admin-reservation-back-link:hover {
+    background-color: var(--color-bg-light);
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-1px);
+}
+
+/* タイトル */
+.admin-reservation-title {
+    font-family: var(--font-heading);
+    font-size: 1.3rem;
+    color: var(--salon-brown);
+    margin-bottom: 1.25rem;
+}
+
+/* テーブルラッパー */
+.admin-reservation-table-wrapper {
+    background-color: var(--card-bg);
+    border-radius: var(--radius-base);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-soft);
+    overflow: hidden;
+    /* 基本はカードらしく隠す（モバイルで上書き） */
+}
+
+/* テーブル */
+.admin-reservation-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.admin-reservation-table thead {
+    background-color: var(--color-bg-soft);
+}
+
+.admin-reservation-table th,
+.admin-reservation-table td {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+    text-align: left;
+    vertical-align: middle;
+}
+
+.admin-reservation-table th {
+    font-weight: 600;
+    color: var(--salon-brown);
+    white-space: nowrap;
+}
+
+.admin-reservation-row:nth-child(even) {
+    background-color: var(--color-bg-light);
+}
+
+.admin-reservation-row:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* セルの調整 */
+.admin-reservation-cell--id {
+    width: 60px;
+}
+
+.admin-reservation-cell--date,
+.admin-reservation-cell--time {
+    white-space: nowrap;
+}
+
+/* 状態 */
+.admin-reservation-status {
+    font-size: 0.85rem;
+    padding: 0.1rem 0.5rem;
+    border-radius: 9999px;
+    background-color: var(--color-bg-soft);
+    color: var(--salon-brown);
+    display: inline-block;
+}
+
+/* 操作セル */
+.admin-reservation-actions {
+    padding: 0.5rem 0.75rem;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+/* ボタン共通 */
+.admin-reservation-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.3rem 0.8rem;
+    font-size: 0.8rem;
+    border-radius: 9999px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    font-family: var(--font-ui);
+    transition:
+        background-color 0.15s ease,
+        box-shadow 0.15s ease,
+        transform 0.1s ease,
+        color 0.15s ease;
+}
+
+/* 編集ボタン */
+.admin-reservation-button--edit {
+    background-color: var(--color-main);
+    color: #ffffff;
+}
+
+.admin-reservation-button--edit:hover {
+    background-color: #385a47;
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-1px);
+}
+
+/* 削除ボタン */
+.admin-reservation-button--delete {
+    background-color: #b43d3d;
+    color: #ffffff;
+}
+
+.admin-reservation-button--delete:hover {
+    background-color: #912f2f;
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-1px);
+}
+
+/* ============================================
+   レスポンシブ
+============================================ */
+
+/* ■ PC（1024px 以上） */
+@media (min-width: 1024px) {
+    .admin-reservation-page {
+        padding: 2rem 1rem 3rem;
+    }
+
+    .admin-reservation-table {
+        font-size: 0.9rem;
+    }
+}
+
+/* ■ タブレット（768px ～ 1023px） */
+@media (max-width: 1023px) and (min-width: 768px) {
+    .admin-reservation-page {
+        padding: 1.5rem 1rem 2.5rem;
+    }
+
+    .admin-reservation-title {
+        font-size: 1.2rem;
+        margin-bottom: 1.1rem;
+    }
+
+    .admin-reservation-table th,
+    .admin-reservation-table td {
+        padding: 0.45rem 0.6rem;
+    }
+
+    .admin-reservation-actions {
+        flex-wrap: wrap;
+    }
+}
+
+/* ■ スマホ共通（～ 767px） */
+@media (max-width: 767px) {
+    .admin-reservation-page {
+        padding: 1.25rem 0.75rem 2rem;
+    }
+
+    .admin-reservation-title {
+        font-size: 1.15rem;
+        margin-bottom: 1rem;
+    }
+
+    /* 小さい画面では横スクロールを許可 */
+    .admin-reservation-table-wrapper {
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .admin-reservation-table {
+        min-width: 640px;
+        /* 情報量を保ったまま横スクロールさせる */
+        font-size: 0.88rem;
+    }
+
+    .admin-reservation-table th,
+    .admin-reservation-table td {
+        padding: 0.4rem 0.5rem;
+    }
+
+    .admin-reservation-actions {
+        flex-wrap: wrap;
+        gap: 0.35rem;
+    }
+
+    .admin-reservation-button {
+        padding: 0.25rem 0.7rem;
+        font-size: 0.78rem;
+    }
+}
+
+/* ■ iPhone SE 想定（幅 375px 前後） */
+@media (max-width: 400px) {
+    .admin-reservation-page {
+        padding: 1rem 0.5rem 1.75rem;
+    }
+
+    .admin-reservation-title {
+        font-size: 1.05rem;
+        margin-bottom: 0.9rem;
+    }
+
+    .admin-reservation-table {
+        min-width: 600px;
+        font-size: 0.85rem;
+    }
+
+    .admin-reservation-table th,
+    .admin-reservation-table td {
+        padding: 0.35rem 0.45rem;
+    }
+
+    .admin-reservation-actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.3rem;
+    }
+
+    .admin-reservation-button {
+        width: 100%;
+        justify-content: center;
+        padding: 0.3rem 0.6rem;
+        font-size: 0.8rem;
+    }
+}
