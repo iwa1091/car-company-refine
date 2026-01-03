@@ -1,59 +1,89 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>管理者ログイン</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f7fafc; }
-    </style>
-</head>
-<body class="flex items-center justify-center min-h-screen">
-    <div class="w-full max-w-md bg-white p-8 rounded-xl shadow-2xl border border-gray-100">
-        <h2 class="text-3xl font-bold text-gray-900 text-center mb-6">
-            管理者ログイン
-        </h2>
-        
-        <form method="POST" action="{{ route('admin.login') }}" class="space-y-6">
-            @csrf
-            
-            <!-- メールアドレス -->
-            <div>
-                <label for="email" class="block text-sm font-medium text-gray-700">
-                    メールアドレス
-                </label>
-                <div class="mt-1">
-                    <input id="email" name="email" type="email" required 
-                           class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-150">
-                </div>
-            </div>
-            
-            <!-- パスワード -->
-            <div>
-                <label for="password" class="block text-sm font-medium text-gray-700">
-                    パスワード
-                </label>
-                <div class="mt-1">
-                    <input id="password" name="password" type="password" required 
-                           class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-150">
-                </div>
-            </div>
-            
-            <!-- ログインボタン -->
-            <div>
-                <button type="submit" 
-                        class="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-lg font-medium text-white bg-pink-500 hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 transition duration-200">
-                    ログイン
-                </button>
-            </div>
-        </form>
-        
-        <div class="mt-6 text-center">
-            <p class="text-sm text-gray-600">
-                一般ユーザーの方は <a href="/login" class="font-medium text-indigo-600 hover:text-indigo-500">こちら</a>
-            </p>
+{{-- /resources/views/admin/login.blade.php --}}
+@extends('layout.app')
+
+@section('title', '管理者ログイン')
+@section('no_header', true)
+@section('no_footer', true)
+
+@section('styles')
+    @vite([
+        'resources/css/layout/app-shell.css',
+        'resources/css/pages/admin/login/login.css',
+    ])
+@endsection
+
+@section('content')
+<div class="admin-login">
+    <div class="admin-login__bg" aria-hidden="true"></div>
+
+    <div class="admin-login__card">
+        <div class="admin-login__head">
+            <div class="admin-login__badge">REFINE</div>
+            <h1 class="admin-login__title">管理者ログイン</h1>
+            <p class="admin-login__subtitle">管理画面へアクセスするにはログインしてください</p>
         </div>
+
+        {{-- フラッシュ/エラー表示（既存挙動は壊さず、表示だけ追加） --}}
+        @if (session('status'))
+            <div class="admin-login__alert admin-login__alert--info" role="status">
+                {{ session('status') }}
+            </div>
+        @endif
+
+        @if ($errors->any())
+            <div class="admin-login__alert admin-login__alert--error" role="alert">
+                <p class="admin-login__alert-title">入力内容をご確認ください</p>
+                <ul class="admin-login__alert-list">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        <form method="POST" action="{{ route('admin.login') }}" class="admin-login__form" novalidate>
+            @csrf
+
+            {{-- メールアドレス --}}
+            <div class="admin-login__field">
+                <label for="email" class="admin-login__label">メールアドレス</label>
+                <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value="{{ old('email') }}"
+                    required
+                    autocomplete="email"
+                    class="admin-login__input @error('email') is-invalid @enderror"
+                    placeholder="admin@example.com"
+                >
+                @error('email')
+                    <p class="admin-login__error">{{ $message }}</p>
+                @enderror
+            </div>
+
+            {{-- パスワード --}}
+            <div class="admin-login__field">
+                <label for="password" class="admin-login__label">パスワード</label>
+                <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    required
+                    autocomplete="current-password"
+                    class="admin-login__input @error('password') is-invalid @enderror"
+                    placeholder="••••••••"
+                >
+                @error('password')
+                    <p class="admin-login__error">{{ $message }}</p>
+                @enderror
+            </div>
+
+            {{-- ログインボタン --}}
+            <button type="submit" class="admin-login__button">
+                ログイン
+            </button>
+        </form>
     </div>
-</body>
-</html>
+</div>
+@endsection

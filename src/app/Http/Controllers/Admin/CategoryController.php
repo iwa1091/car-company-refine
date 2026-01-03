@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class CategoryController extends Controller
@@ -36,16 +37,28 @@ class CategoryController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
+        // ✅ 前後の空白で重複扱いをすり抜けないように整形（不要なら削除OK）
+        $request->merge([
+            'name' => trim((string) $request->input('name')),
         ]);
+
+        $validated = $request->validate(
+            [
+                'name' => ['required', 'string', 'max:255', Rule::unique('categories', 'name')],
+            ],
+            [
+                'name.unique' => 'そのカテゴリー名はすでに登録されています。',
+            ]
+        );
 
         $category = Category::create($validated);
 
-        // ✅ フラッシュデータに新しいカテゴリを渡す
-        return back()->with('category', $category);
+        // ✅ Inertia的に安定：redirect back + flash
+        return redirect()
+            ->back(303)
+            ->with('success', 'カテゴリを作成しました。')
+            ->with('category', $category);
     }
-
 
     /**
      * 編集フォーム
@@ -62,13 +75,29 @@ class CategoryController extends Controller
      */
     public function update(Request $request, Category $category)
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:100'],
+        // ✅ 前後の空白で重複扱いをすり抜けないように整形（不要なら削除OK）
+        $request->merge([
+            'name' => trim((string) $request->input('name')),
         ]);
+
+        $validated = $request->validate(
+            [
+                'name' => [
+                    'required',
+                    'string',
+                    'max:100',
+                    Rule::unique('categories', 'name')->ignore($category->id),
+                ],
+            ],
+            [
+                'name.unique' => 'そのカテゴリー名はすでに登録されています。',
+            ]
+        );
 
         $category->update($validated);
 
-        return redirect()->route('admin.categories.index')
+        return redirect()
+            ->route('admin.categories.index')
             ->with('success', 'カテゴリを更新しました。');
     }
 
@@ -79,7 +108,8 @@ class CategoryController extends Controller
     {
         $category->delete();
 
-        return redirect()->route('admin.categories.index')
+        return redirect()
+            ->route('admin.categories.index')
             ->with('success', 'カテゴリを削除しました。');
     }
 }

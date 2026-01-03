@@ -1,111 +1,198 @@
-/* =======================================
-   Global Base Styles for Ohana Salon
-   ※ theme.css のデザイントークンをそのまま使用
-======================================= */
+/* =========================================================
+   app-shell.css — Car company theme (Dark + Blue + Glass)
+   既存のクラス/変数を壊さず、全体のベースを車LP寄りに統一
+   ※ 変数の本体は theme.css に寄せ、ここでは表現/共通UIを担当
+========================================================= */
 
-/* ---------------------------------------
-   Base
---------------------------------------- */
+/* ---------------------------------------------------------
+  Base
+--------------------------------------------------------- */
+html,
 body {
-  background-color: var(--background);
-  color: var(--foreground);
+  height: 100%;
+}
+
+body {
   font-family: var(--font-base);
+  color: var(--text-default);
   line-height: 1.7;
-  font-size: 1.05rem;
   margin: 0;
   padding: 0;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
+
+  background-color: var(--color-bg-base);
+
+  /* login/dashboard と統一した “深いグラデ + 光” */
+  background-image:
+    radial-gradient(980px 560px at 18% 8%, rgba(43, 124, 255, 0.22), transparent 62%),
+    radial-gradient(860px 560px at 88% 12%, rgba(0, 194, 255, 0.14), transparent 64%),
+    radial-gradient(760px 460px at 50% 95%, rgba(255, 255, 255, 0.05), transparent 62%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.00));
+  background-repeat: no-repeat;
 }
 
-/* モバイルは文字を少し大きく（高齢者配慮） */
-@media (max-width: 768px) {
-  body {
-    font-size: 1.15rem;
-  }
-}
-
-/* ---------------------------------------
-   Typography
---------------------------------------- */
+/* 見出し */
 h1,
 h2,
 h3,
-h4 {
+h4,
+h5,
+h6 {
   font-family: var(--font-heading);
-  font-weight: 600;
-  color: var(--salon-brown);
-  margin: 0 0 1rem 0;
-  line-height: 1.3;
+  font-weight: 800;
+  line-height: 1.25;
+  margin: 0 0 0.6rem;
+  color: rgba(255, 255, 255, 0.92);
 }
 
-/* pタグの基本設定 */
 p {
-  margin: 0 0 1rem 0;
+  margin: 0 0 1rem;
+  color: var(--text-default);
 }
 
-/* リンク */
-a {
-  color: var(--salon-brown);
-  text-decoration: none;
-  transition: opacity 0.2s ease;
-}
-
-a:hover {
-  opacity: 0.8;
-}
-
-/* ---------------------------------------
-   Reset / Elements
---------------------------------------- */
 img {
   max-width: 100%;
   height: auto;
   display: block;
 }
 
-button {
-  cursor: pointer;
-  border: none;
-  background: none;
+/* ---------------------------------------------------------
+  Links
+--------------------------------------------------------- */
+a {
+  text-decoration: none;
+  color: var(--color-accent);
+  transition: color 0.2s ease-in-out, opacity 0.2s ease-in-out;
 }
 
-input,
-textarea,
-select {
-  font-family: var(--font-base);
-  border-radius: 6px;
-  border: 1px solid var(--border-color);
-  color: var(--foreground);
-  padding: 0.4rem 0.6rem;
+a:hover {
+  color: var(--color-accent-2);
+  opacity: 0.95;
 }
 
-/* ---------------------------------------
-   Layout Utility
---------------------------------------- */
-.oh-container {
-  width: 100%;
-  max-width: var(--container-max);
-  margin: 0 auto;
+/* ---------------------------------------------------------
+  Container Utilities (既存互換)
+--------------------------------------------------------- */
+.container {
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
   padding-left: 1rem;
   padding-right: 1rem;
 }
 
-/* ---------------------------------------
-   Utility Classes
---------------------------------------- */
-.text-ohana-brown {
-  color: var(--salon-brown);
+/* ---------------------------------------------------------
+  Forms (ダークUIで白背景にならないように共通化)
+  ※ global.css の input 系を上書きしすぎない範囲で調整
+--------------------------------------------------------- */
+input,
+textarea,
+select {
+  background: rgba(10, 14, 26, 0.35);
+  color: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--car-border, var(--border-color));
+  border-radius: 12px;
 }
 
-.bg-ohana-beige {
-  background-color: var(--salon-beige);
+input::placeholder,
+textarea::placeholder {
+  color: rgba(234, 241, 255, 0.55);
 }
 
-.ohana-card {
-  background: var(--card-bg);
-  border-radius: var(--radius-base);
-  border: 1px solid var(--border-color);
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: rgba(0, 194, 255, 0.55);
+  box-shadow: 0 0 0 4px rgba(0, 194, 255, 0.16), 0 12px 26px rgba(0, 0, 0, 0.35);
+}
+
+/* ---------------------------------------------------------
+  Glass surface utility（任意で使える）
+--------------------------------------------------------- */
+.glass-surface {
+  border-radius: var(--radius-large);
+  border: 1px solid var(--glass-border, var(--border-color));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.06));
+  box-shadow: var(--shadow-medium);
+  backdrop-filter: blur(var(--glass-blur, 12px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 12px));
+}
+
+/* ---------------------------------------------------------
+  Buttons (共通)
+  ※ menu_price.blade の "button-primary" をここで担保
+--------------------------------------------------------- */
+.button,
+.button-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1.2rem;
+  border-radius: 12px;
+  font-weight: 800;
+  font-family: var(--font-ui);
+  text-align: center;
+  border: 1px solid var(--car-border, var(--border-color));
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.button-primary {
+  color: #fff;
+  background: linear-gradient(90deg, rgba(43, 124, 255, 1), rgba(0, 194, 255, 0.95));
+  border-color: rgba(43, 124, 255, 0.35);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.35);
+}
+
+.button-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.45);
+  border-color: rgba(0, 194, 255, 0.55);
+}
+
+.button:hover {
+  transform: translateY(-2px);
   box-shadow: var(--shadow-soft);
-  padding: 1.25rem;
+}
+
+/* ---------------------------------------------------------
+  Utility classes (既存互換)
+--------------------------------------------------------- */
+.text-center {
+  text-align: center;
+}
+
+.mx-auto {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.mb-4 {
+  margin-bottom: 1rem;
+}
+
+.py-8 {
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
+
+.px-4 {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.text-white {
+  color: #fff;
+}
+
+/* legacy names kept */
+.bg-salon-brown {
+  background-color: var(--car-bg-2, #101a2e);
+}
+
+.text-salon-gold {
+  color: var(--color-accent);
 }

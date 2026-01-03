@@ -73,10 +73,10 @@ export default function ServiceIndex() {
                     </Link>
                 </div>
 
-                {/* カテゴリフィルタ */}
+                {/* コースフィルタ */}
                 <div className="service-filter">
                     <label className="service-filter-label">
-                        カテゴリで絞り込み:
+                        コースで絞り込み:
                     </label>
                     <select
                         value={filterCategory}
@@ -99,7 +99,7 @@ export default function ServiceIndex() {
                             <tr>
                                 <th>ID</th>
                                 <th>名前</th>
-                                <th>カテゴリ</th>
+                                <th>コース</th>
                                 <th>価格</th>
                                 <th>所要時間</th>
                                 <th>特徴</th>

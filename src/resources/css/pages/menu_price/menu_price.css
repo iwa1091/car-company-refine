@@ -1,43 +1,49 @@
 /* =========================================================
-   menu_price.css — Lash Brow Ohana（メニュー・料金専用）
-   テーマ変数に完全準拠 / PC・タブレット・スマホ対応
+   menu_price.css — Car theme version (Menu / Price)
+   ダーク背景 + ガラスカード + ブルーアクセント
 ========================================================= */
 
 /* ------------------------------
    ページ全体
 ------------------------------ */
 .menu-page-container {
-    background-color: var(--color-bg-base);
-    padding: 3.5rem 1.5rem;
-    font-family: var(--font-base);
+    position: relative;
+    min-height: 100vh;
+    padding: 4.2rem 1.4rem;
     color: var(--text-default);
+    font-family: var(--font-base);
+    background:
+        radial-gradient(900px 520px at 15% 0%, rgba(43, 124, 255, 0.18), transparent 60%),
+        radial-gradient(800px 460px at 90% 10%, rgba(0, 194, 255, 0.10), transparent 65%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.00));
 }
 
 .menu-inner {
-    max-width: 1100px;
+    max-width: 1120px;
     margin: 0 auto;
 }
 
 /* ------------------------------
-   ページヘッダー
+   ページヘッダー（LPの雰囲気：左寄せ + アクセントライン）
 ------------------------------ */
 .menu-header {
-    text-align: center;
-    margin-bottom: 3.5rem;
+    margin-bottom: 2.8rem;
+    padding-bottom: 1.4rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.10);
 }
 
 .menu-title {
-    font-family: var(--font-heading);
     font-size: 2rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
+    letter-spacing: 0.02em;
+    margin-bottom: 0.6rem;
+    color: var(--text-default);
 }
 
 .menu-description {
     font-size: 1rem;
-    line-height: 1.7;
-    max-width: 680px;
-    margin: 0 auto;
+    line-height: 1.8;
+    max-width: 760px;
+    margin: 0;
     color: var(--text-muted);
 }
 
@@ -45,74 +51,107 @@
    カテゴリ全体（タイトル + 説明 + カード一覧）
 ========================================================= */
 .menu-section {
-    margin-bottom: 4rem;
+    margin: 2.4rem 0 3.6rem;
 }
 
-/* セクションタイトルはグリッド全体を占有 */
+/* セクションタイトル：LPっぽい細ライン＋アクセント */
 .section-title {
-    font-family: var(--font-heading);
-    font-size: 1.6rem;
-    margin-bottom: 0.6rem;
-    border-bottom: 2px solid var(--color-accent);
-    padding-bottom: 0.25rem;
+    font-size: 1.35rem;
+    margin-bottom: 0.5rem;
     color: var(--text-default);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
 }
 
-/* カテゴリ説明文（Bladeには存在するため追加） */
+.section-title::before {
+    content: "";
+    width: 18px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--color-accent), var(--color-accent-2));
+    border-radius: 999px;
+}
+
 .category-description {
     color: var(--text-muted);
     font-size: 0.95rem;
-    margin: 0.6rem 0 1.5rem;
-    line-height: 1.6;
+    margin: 0.55rem 0 1.35rem;
+    line-height: 1.8;
 }
 
 /* =========================================================
-   ★ サービスカードを横並びにする領域
+   サービスカード：LPのカード群に寄せる
 ========================================================= */
 .menu-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 1.6rem;
+    gap: 1.3rem;
 }
 
-/* =========================================================
-   メニューカード
-========================================================= */
+/* ガラスカード */
 .menu-card {
-    background: var(--color-white);
-    border-radius: var(--radius-base);
-    padding: 1.25rem;
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06);
-    transition: transform .25s ease, box-shadow .25s ease;
     position: relative;
+    border-radius: var(--radius-base);
+    padding: 1.15rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+    overflow: hidden;
+    transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+}
+
+.menu-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(420px 220px at 20% 0%, rgba(43, 124, 255, 0.12), transparent 55%);
+    opacity: 0.9;
 }
 
 .menu-card:hover {
     transform: translateY(-3px);
-    box-shadow: var(--shadow-medium);
+    border-color: rgba(0, 194, 255, 0.28);
+    box-shadow: 0 16px 44px rgba(0, 0, 0, 0.45);
 }
 
 /* 人気No.1バッジ */
-.menu-card-popular .popular-badge {
+.popular-badge {
     position: absolute;
-    top: 10px;
-    left: 10px;
-    background: var(--color-accent);
-    color: var(--color-white);
+    top: 12px;
+    left: 12px;
+    z-index: 2;
+    background: linear-gradient(90deg, rgba(43, 124, 255, 1), rgba(0, 194, 255, 0.95));
+    color: #fff;
     padding: 0.35rem 0.65rem;
-    font-size: 0.8rem;
-    border-radius: var(--radius-full);
-    font-weight: 600;
+    font-size: 0.78rem;
+    border-radius: 10px;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.35);
 }
 
-/* カード画像 */
+/* 画像 */
 .card-image {
     width: 100%;
-    height: 160px;
-    border-radius: var(--radius-base);
+    height: 168px;
+    border-radius: calc(var(--radius-base) - 4px);
     overflow: hidden;
-    margin-bottom: 0.8rem;
+    margin-bottom: 0.95rem;
     position: relative;
+    z-index: 1;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.card-image::after {
+    /* 画像上に薄い暗幕 + 青ハイライト */
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(180deg, rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.45)),
+        radial-gradient(420px 220px at 10% 0%, rgba(43, 124, 255, 0.18), transparent 60%);
+    pointer-events: none;
 }
 
 .card-image img {
@@ -121,134 +160,200 @@
     object-fit: cover;
 }
 
-/* 特徴バッジ列 */
+/* 特徴バッジ */
 .feature-badges {
     position: absolute;
-    bottom: 8px;
-    left: 8px;
+    bottom: 10px;
+    left: 10px;
     display: flex;
     flex-wrap: wrap;
-    gap: 0.25rem;
+    gap: 0.35rem;
+    z-index: 2;
 }
 
 .feature-badge {
     background: rgba(0, 0, 0, 0.55);
-    color: #fff;
-    padding: 0.15rem 0.4rem;
-    font-size: 0.75rem;
-    border-radius: var(--radius-full);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    color: rgba(255, 255, 255, 0.92);
+    padding: 0.2rem 0.45rem;
+    font-size: 0.72rem;
+    border-radius: 9999px;
+    backdrop-filter: blur(6px);
 }
 
 /* ------------------------------
-   カード内部テキスト
+   テキスト
 ------------------------------ */
 .card-header {
+    position: relative;
+    z-index: 1;
     margin-bottom: 0.9rem;
 }
 
 .card-title {
-    font-family: var(--font-heading);
-    font-size: 1.2rem;
-    margin-bottom: 0.4rem;
+    font-size: 1.12rem;
+    margin-bottom: 0.45rem;
     color: var(--text-default);
+    letter-spacing: 0.01em;
 }
 
 .card-description {
     font-size: 0.9rem;
     color: var(--text-muted);
-    line-height: 1.6;
+    line-height: 1.75;
 }
 
 /* ------------------------------
    価格 + 所要時間 + 予約ボタン
 ------------------------------ */
 .card-content {
+    position: relative;
+    z-index: 1;
     display: flex;
     flex-direction: column;
-    gap: 0.9rem;
+    gap: 0.85rem;
 }
 
 .card-price-info {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: baseline;
+    gap: 0.8rem;
 }
 
 .card-price {
-    font-family: var(--font-ui);
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: var(--color-accent);
-}
-
-.card-duration .duration-text {
-    font-size: 0.9rem;
+    font-size: 1.22rem;
+    font-weight: 900;
+    letter-spacing: 0.02em;
     color: var(--text-muted);
 }
 
-/* 予約ボタン */
+.card-duration {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.card-duration .duration-text {
+    padding: 0.15rem 0.55rem;
+    border-radius: 9999px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+/* 予約ボタン（LPの角丸ボタンに寄せる） */
 .btn-reserve {
-    background-color: var(--color-accent);
-    color: var(--color-white);
-    text-align: center;
-    padding: 0.8rem 0;
-    font-family: var(--font-ui);
+    width: 100%;
+    border-radius: 12px;
+    padding: 0.9rem 0;
     font-size: 0.95rem;
-    border-radius: var(--radius-full);
-    text-decoration: none;
-    transition: 0.25s ease;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    color: #fff;
+    background: linear-gradient(90deg, rgba(43, 124, 255, 1), rgba(0, 194, 255, 0.95));
+    border: 1px solid rgba(43, 124, 255, 0.32);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+/* button-primary の display 指定に勝つ */
+a.button-primary.btn-reserve {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
 }
 
 .btn-reserve:hover {
     transform: translateY(-2px);
-    box-shadow: var(--shadow-medium);
+    border-color: rgba(0, 194, 255, 0.55);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
 }
 
 /* =========================================================
-   注意事項
+   空表示
+========================================================= */
+.no-service {
+    color: var(--text-muted);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius-base);
+    padding: 1rem;
+}
+
+/* =========================================================
+   注意事項（薄いガラスカード2枚）
 ========================================================= */
 .notes-section {
-    margin-top: 3rem;
+    margin-top: 3.2rem;
+    padding-top: 1.6rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.10);
 }
 
 .notes-title {
-    font-family: var(--font-heading);
-    font-size: 1.4rem;
+    font-size: 1.25rem;
     margin-bottom: 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.notes-title::before {
+    content: "";
+    width: 18px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--color-accent), var(--color-accent-2));
+    border-radius: 999px;
 }
 
 .notes-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1.2rem;
+    gap: 1rem;
 }
 
 .note-item {
-    background: var(--color-white);
-    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: var(--radius-base);
-    box-shadow: var(--shadow-soft);
+    padding: 1.05rem 1.05rem 0.85rem;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+}
+
+.note-item p {
+    color: var(--text-muted);
+    line-height: 1.8;
 }
 
 /* ------------------------------
-   レスポンシブ
+   Responsive
 ------------------------------ */
 @media (max-width: 768px) {
+    .menu-page-container {
+        padding: 3.6rem 1.1rem;
+    }
+
     .notes-grid {
         grid-template-columns: 1fr;
+    }
+
+    .menu-title {
+        font-size: 1.7rem;
     }
 }
 
 @media (max-width: 640px) {
-    .menu-title {
-        font-size: 1.6rem;
-    }
-
-    .section-title {
-        font-size: 1.4rem;
-    }
-
     .menu-card {
         padding: 1rem;
+    }
+
+    .card-image {
+        height: 156px;
+    }
+
+    .card-price {
+        font-size: 1.15rem;
     }
 }

@@ -19,6 +19,10 @@ class Service extends Model
         'description',
         'duration_minutes',
         'price',
+
+        // ✅ 追加（表示用）
+        'price_text',
+
         'sort_order',
         'is_active',
         'image',       // サービス画像
@@ -37,6 +41,7 @@ class Service extends Model
         'is_active' => 'boolean',
         'features' => 'array',   // JSON ⇔ 配列 に自動変換
         'is_popular' => 'boolean',
+        // price_text は string のままでOK（casts不要）
     ];
 
     /**

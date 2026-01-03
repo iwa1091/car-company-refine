@@ -7,6 +7,7 @@ use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use Illuminate\Validation\ValidationException; // ★ 追加（認証失敗メッセージ用）
 
 class LoginController extends Controller
 {
@@ -63,6 +64,41 @@ class LoginController extends Controller
     }
 
     /**
+     * ★ 追加：ログイン時の入力バリデーション
+     * AuthenticatesUsers が login() 内で必ず呼び出すため、
+     * ここをオーバーライドするのが最も安全。
+     */
+    protected function validateLogin(Request $request)
+    {
+        $request->validate(
+            [
+                'email' => ['required', 'string', 'email'],
+                'password' => ['required', 'string'],
+            ],
+            [
+                'email.required' => 'メールアドレスは必須です。',
+                'email.email' => 'メールアドレスの形式が正しくありません。',
+                'password.required' => 'パスワードは必須です。',
+            ],
+            [
+                'email' => 'メールアドレス',
+                'password' => 'パスワード',
+            ]
+        );
+    }
+
+    /**
+     * ★ 追加：認証失敗時（メール/パスワード不一致）のメッセージを日本語に統一
+     * 既存の挙動（失敗時に errors に入って戻る）を維持したまま文言だけ差し替え。
+     */
+    protected function sendFailedLoginResponse(Request $request)
+    {
+        throw ValidationException::withMessages([
+            'email' => ['メールアドレスまたはパスワードが一致しません。'],
+        ]);
+    }
+
+    /**
      * ユーザーモデルに管理者フラグがある場合、認証時にチェックする
      * 一般ユーザーと管理者のログイン処理を分離するため、このメソッドをオーバーライドします。
      * * 【修正点】管理者としてログインを試みる際、クレデンシャルに 'role' => 'admin' を含め、
@@ -73,7 +109,7 @@ class LoginController extends Controller
     {
         // ユーザーから入力されたメールアドレスとパスワードを取得
         $credentials = $this->credentials($request);
-        
+
         // 管理者としてログインさせるため、クレデンシャルに 'role' => 'admin' を追加
         // Auth::guard('admin')->attempt() は、この追加された条件も同時にチェックします。
         $credentials = array_merge($credentials, ['role' => 'admin']);
@@ -82,7 +118,7 @@ class LoginController extends Controller
         return $this->guard()->attempt(
             $credentials, $request->filled('remember')
         );
-        
+
         // 元のコードで意図されていた isAdmin() チェックは不要になります。
         // なぜなら、adminガードが 'role' => 'admin' の条件でデータベースからレコードを探すためです。
     }

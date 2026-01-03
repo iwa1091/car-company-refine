@@ -1,9 +1,72 @@
-/* Custom Colors and Fonts - サイト全体で使用する色とフォントを定義 */
+/* =========================================================
+   app-shell.css — Car company theme (Dark + Blue accent)
+   既存のクラス/変数を壊さず、全体のベースを車LP寄りに統一
+========================================================= */
+
+/* ---------------------------------------------------------
+  Theme Variables
+--------------------------------------------------------- */
 :root {
+    /* ===== Car theme palette ===== */
+    --car-bg-0: #060a12;
+    /* page base */
+    --car-bg-1: #0b1020;
+    /* section */
+    --car-bg-2: #101a2e;
+    /* elevated */
+    --car-surface: rgba(255, 255, 255, 0.06);
+    --car-surface-2: rgba(255, 255, 255, 0.10);
+    --car-border: rgba(255, 255, 255, 0.14);
+    --car-border-strong: rgba(255, 255, 255, 0.22);
+
+    --car-text: #eaf1ff;
+    --car-text-muted: rgba(234, 241, 255, 0.72);
+
+    --car-accent: #2b7cff;
+    /* primary blue */
+    --car-accent-2: #00c2ff;
+    /* cyan highlight */
+    --car-danger: #ff5a6b;
+
+    --car-shadow-soft: 0 10px 28px rgba(0, 0, 0, 0.35);
+    --car-shadow-strong: 0 16px 44px rgba(0, 0, 0, 0.45);
+
+    --car-radius: 14px;
+    --car-radius-lg: 18px;
+    --car-radius-full: 9999px;
+
+    /* ===== Fonts ===== */
+    --font-base: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", "Hiragino Kaku Gothic ProN",
+        "Yu Gothic", "Meiryo", sans-serif;
+    --font-heading: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", sans-serif;
+    --font-ui: var(--font-base);
+
+    /* ---------------------------------------------------------
+      Backward-compatible variables (既存CSSが参照しても崩れない)
+      ※ menu_price.css が参照している var 名をここで保証
+    --------------------------------------------------------- */
+    --color-bg-base: var(--car-bg-0);
+    --color-bg-section: var(--car-bg-1);
+    --color-white: #ffffff;
+
+    --color-accent: var(--car-accent);
+    --color-accent-2: var(--car-accent-2);
+
+    --text-default: var(--car-text);
+    --text-muted: var(--car-text-muted);
+
+    --shadow-soft: var(--car-shadow-soft);
+    --shadow-medium: var(--car-shadow-strong);
+
+    --radius-base: var(--car-radius);
+    --radius-full: var(--car-radius-full);
+
+    /* ===== Legacy salon vars (参照が残っていても死なないよう残す) ===== */
     --salon-brown: #3e2723;
     --salon-gold: #fff1b5;
     --salon-beige: #f5f5dc;
     --salon-pink: #fbecec;
+
     --white: #fff;
     --white-80: rgba(255, 255, 255, 0.8);
     --white-70: rgba(255, 255, 255, 0.7);
@@ -11,14 +74,27 @@
     --white-20: rgba(255, 255, 255, 0.2);
 }
 
-/* Base Styles - 基本的なHTML要素のスタイル設定 */
+/* ---------------------------------------------------------
+  Base
+--------------------------------------------------------- */
+html,
 body {
-    font-family: 'Zen Maru Gothic', sans-serif;
-    color: var(--salon-brown);
-    line-height: 1.6;
+    height: 100%;
+}
+
+body {
+    font-family: var(--font-base);
+    color: var(--text-default);
+    line-height: 1.7;
     margin: 0;
     padding: 0;
-    background-color: var(--salon-beige);
+    background-color: var(--color-bg-base);
+    /* 背景に深いグラデ + ほんのりハイライト */
+    background-image:
+        radial-gradient(1200px 600px at 10% -10%, rgba(43, 124, 255, 0.20), transparent 60%),
+        radial-gradient(900px 520px at 90% 10%, rgba(0, 194, 255, 0.12), transparent 62%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.00));
+    background-repeat: no-repeat;
 }
 
 h1,
@@ -27,20 +103,15 @@ h3,
 h4,
 h5,
 h6 {
-    font-family: 'Shippori Mincho', serif;
-    font-weight: 500;
-    line-height: 1.2;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    line-height: 1.25;
+    margin: 0 0 0.6rem;
 }
-
-a {
-    text-decoration: none;
-    color: var(--salon-gold);
-    transition: color 0.2s ease-in-out;
-}
-
 
 p {
-    margin-bottom: 1rem;
+    margin: 0 0 1rem;
+    color: var(--text-default);
 }
 
 img {
@@ -49,33 +120,74 @@ img {
     display: block;
 }
 
-/* Layout Utilities - 共通のレイアウト要素 */
+/* ---------------------------------------------------------
+  Links
+--------------------------------------------------------- */
+a {
+    text-decoration: none;
+    color: var(--color-accent);
+    transition: color 0.2s ease-in-out, opacity 0.2s ease-in-out;
+}
+
+a:hover {
+    color: var(--color-accent-2);
+    opacity: 0.95;
+}
+
+/* ---------------------------------------------------------
+  Layout Utilities
+--------------------------------------------------------- */
 .container {
-    max-width: 1280px;
+    max-width: 1200px;
     margin-left: auto;
     margin-right: auto;
     padding-left: 1rem;
     padding-right: 1rem;
 }
 
-/* Buttons - 共通ボタンのスタイル */
-.button {
-    display: inline-block;
-    padding: 0.75rem 1.5rem;
-    border-radius: 9999px;
-    /* Tailwindの丸みのあるボタンを模倣 */
-    font-weight: 500;
+/* ---------------------------------------------------------
+  Buttons (共通)
+  ※ menu_price.blade の "button-primary" をここで担保
+--------------------------------------------------------- */
+.button,
+.button-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.85rem 1.2rem;
+    border-radius: 12px;
+    font-weight: 700;
+    font-family: var(--font-ui);
     text-align: center;
-    border: 2px solid transparent;
-    transition: all 0.3s ease-in-out;
+    border: 1px solid var(--car-border);
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.button-primary {
+    color: #fff;
+    background: linear-gradient(90deg, rgba(43, 124, 255, 1), rgba(0, 194, 255, 0.95));
+    border-color: rgba(43, 124, 255, 0.35);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.30);
+}
+
+.button-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.40);
+    border-color: rgba(0, 194, 255, 0.55);
 }
 
 .button:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    transform: translateY(-2px);
+    box-shadow: var(--car-shadow-soft);
 }
 
-/* Utility Classes - Tailwindの便利クラスを模倣 */
+/* ---------------------------------------------------------
+  Utility classes (既存互換)
+--------------------------------------------------------- */
 .text-center {
     text-align: center;
 }
@@ -100,13 +212,14 @@ img {
 }
 
 .text-white {
-    color: var(--white);
+    color: #fff;
 }
 
+/* legacy names kept */
 .bg-salon-brown {
-    background-color: var(--salon-brown);
+    background-color: var(--car-bg-2);
 }
 
 .text-salon-gold {
-    color: var(--salon-gold);
+    color: var(--color-accent);
 }

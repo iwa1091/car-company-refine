@@ -25,6 +25,9 @@ return new class extends Migration
             
             // 価格（円単位）
             $table->decimal('price', 8, 0)->unsigned();
+
+            // ✅ 追加：価格の表示用テキスト（例：10,000円 / 要相談 / キャンペーン中 など）
+            $table->string('price_text')->nullable();
             
             // 表示順序
             $table->unsignedSmallInteger('sort_order')->default(0);

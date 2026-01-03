@@ -1,5 +1,5 @@
 // /resources/js/Pages/Admin/ServiceForm.jsx
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useForm, usePage, Link, router } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import CategoryModal from "./CategoryModal";
@@ -11,7 +11,11 @@ export default function ServiceForm({
     service = null,
     categories: initialCategories = [],
 }) {
-    const { errors } = usePage().props;
+    const { errors, flash } = usePage().props || {};
+    const flashCategory = flash?.category ?? null;
+
+    // ✅ 200KB（クライアント側チェック）
+    const MAX_IMAGE_BYTES = 200 * 1024;
 
     // ✅ Inertia の useForm フックを使用
     const { data, setData, processing } = useForm({
@@ -20,25 +24,46 @@ export default function ServiceForm({
         price: service?.price || "",
         duration_minutes: service?.duration_minutes || "",
         sort_order: service?.sort_order || 0,
-        is_active: service?.is_active || false,
-        is_popular: service?.is_popular || false,
+        is_active: !!service?.is_active,
+        is_popular: !!service?.is_popular,
         category_id: service?.category_id || "",
         features: Array.isArray(service?.features) ? service.features : [],
         image: null,
     });
 
+    // ★ props更新に追従できるように state を同期
     const [categories, setCategories] = useState(initialCategories);
     const [showModal, setShowModal] = useState(false);
     const [featureInput, setFeatureInput] = useState("");
 
-    /** ✅ カテゴリ新規作成後に即反映 */
-    const handleCategoryCreated = (newCategory) => {
-        if (!newCategory) return;
+    // ✅ 画像サイズエラー（クライアント側）
+    const [imageError, setImageError] = useState("");
 
-        setCategories((prev) => [...prev, newCategory]);
+    // ✅ props 側の categories が更新されたら state も更新（InertiaのPOST/リダイレクト後の差分反映）
+    useEffect(() => {
+        setCategories(Array.isArray(initialCategories) ? initialCategories : []);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [initialCategories?.length]);
+
+    /** ✅ カテゴリ新規作成後に即反映（重複防止） */
+    const handleCategoryCreated = (newCategory) => {
+        if (!newCategory?.id) return;
+
+        setCategories((prev) => {
+            const exists = prev?.some((c) => c?.id === newCategory.id);
+            return exists ? prev : [...(prev || []), newCategory];
+        });
+
         setData("category_id", newCategory.id);
         setShowModal(false);
     };
+
+    // ✅ もし flash.category が共有される構成なら、親側でも拾って確実に反映＆モーダルを閉じる
+    useEffect(() => {
+        if (!flashCategory?.id) return;
+        handleCategoryCreated(flashCategory);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [flashCategory?.id]);
 
     /** ✅ 入力変更 */
     const handleChange = (e) => {
@@ -47,7 +72,34 @@ export default function ServiceForm({
         if (type === "checkbox") {
             setData(name, checked);
         } else if (type === "file") {
-            setData(name, files[0] ?? null);
+            const file = files?.[0] ?? null;
+
+            // ✅ 画像だけ 200KB 制限（他の file input が増えても壊さない）
+            if (name === "image") {
+                // 未選択（取り消し）
+                if (!file) {
+                    setImageError("");
+                    setData(name, null);
+                    return;
+                }
+
+                if (file.size > MAX_IMAGE_BYTES) {
+                    setImageError("画像は200KB以下のファイルを選択してください。");
+                    setData(name, null);
+
+                    // 同じファイルを選び直せるようにリセット
+                    e.target.value = "";
+                    return;
+                }
+
+                // OK
+                setImageError("");
+                setData(name, file);
+                return;
+            }
+
+            // 画像以外（現状は無いが既存仕様を壊さない）
+            setData(name, file);
         } else {
             setData(name, value);
         }
@@ -75,6 +127,12 @@ export default function ServiceForm({
             data.features.filter((f) => f !== feature)
         );
     };
+
+    const sortedCategories = useMemo(() => {
+        const list = Array.isArray(categories) ? categories : [];
+        // 既存仕様を壊さないため「そのまま」でもOKだが、見やすいように id 昇順に揃えるならここで
+        return list;
+    }, [categories]);
 
     /** ✅ 保存処理 */
     const handleSubmit = (e) => {
@@ -111,7 +169,7 @@ export default function ServiceForm({
     return (
         <div className="admin-service-form-page">
             <div className="admin-service-form-container">
-                {/* 🔙 サービス一覧（ServiceIndex）へ戻るボタン */}
+                {/* 🔙 サービス一覧へ戻る */}
                 <div className="service-form-back-area">
                     <Link
                         href={route("admin.services.index")}
@@ -141,7 +199,7 @@ export default function ServiceForm({
                             className="service-form-input"
                             required
                         />
-                        {errors.name && (
+                        {errors?.name && (
                             <div className="service-form-error">
                                 {errors.name}
                             </div>
@@ -150,7 +208,7 @@ export default function ServiceForm({
 
                     {/* カテゴリ */}
                     <div className="service-form-field">
-                        <label className="service-form-label">カテゴリ</label>
+                        <label className="service-form-label">カテゴリー名</label>
                         <div className="service-form-category-row">
                             <select
                                 name="category_id"
@@ -160,7 +218,7 @@ export default function ServiceForm({
                                 required
                             >
                                 <option value="">選択してください</option>
-                                {categories.map((cat) => (
+                                {sortedCategories.map((cat) => (
                                     <option key={cat.id} value={cat.id}>
                                         {cat.name}
                                     </option>
@@ -176,7 +234,7 @@ export default function ServiceForm({
                                 ＋新規作成
                             </button>
                         </div>
-                        {errors.category_id && (
+                        {errors?.category_id && (
                             <div className="service-form-error">
                                 {errors.category_id}
                             </div>
@@ -193,7 +251,7 @@ export default function ServiceForm({
                             className="service-form-textarea"
                             rows="4"
                         />
-                        {errors.description && (
+                        {errors?.description && (
                             <div className="service-form-error">
                                 {errors.description}
                             </div>
@@ -202,19 +260,16 @@ export default function ServiceForm({
 
                     {/* 価格 */}
                     <div className="service-form-field">
-                        <label className="service-form-label">
-                            価格 (円)
-                        </label>
+                        <label className="service-form-label">価格 (円)</label>
                         <input
-                            type="number"
+                            type="text"
                             name="price"
                             value={data.price}
                             onChange={handleChange}
                             className="service-form-input"
-                            min="0"
-                            required
+                            inputMode="text"
                         />
-                        {errors.price && (
+                        {errors?.price && (
                             <div className="service-form-error">
                                 {errors.price}
                             </div>
@@ -236,7 +291,7 @@ export default function ServiceForm({
                             max="480"
                             required
                         />
-                        {errors.duration_minutes && (
+                        {errors?.duration_minutes && (
                             <div className="service-form-error">
                                 {errors.duration_minutes}
                             </div>
@@ -254,7 +309,7 @@ export default function ServiceForm({
                             className="service-form-input"
                             min="0"
                         />
-                        {errors.sort_order && (
+                        {errors?.sort_order && (
                             <div className="service-form-error">
                                 {errors.sort_order}
                             </div>
@@ -304,7 +359,7 @@ export default function ServiceForm({
                         <div className="service-features-container">
                             {data.features.map((f, idx) => (
                                 <span
-                                    key={idx}
+                                    key={`${f}-${idx}`}
                                     className="service-feature-chip"
                                 >
                                     {f}
@@ -318,7 +373,7 @@ export default function ServiceForm({
                                 </span>
                             ))}
                         </div>
-                        {errors.features && (
+                        {errors?.features && (
                             <div className="service-form-error">
                                 {errors.features}
                             </div>
@@ -337,6 +392,27 @@ export default function ServiceForm({
                             className="service-form-input"
                             accept="image/*"
                         />
+
+                        {/* ✅ 追加：注意文言 */}
+                        <div
+                            style={{
+                                marginTop: "6px",
+                                fontSize: "0.82rem",
+                                fontWeight: 700,
+                                color: "rgba(234, 241, 255, 0.65)",
+                                lineHeight: 1.4,
+                            }}
+                        >
+                            画像容量は200KB以下にしてください。
+                        </div>
+
+                        {/* ✅ クライアント側（200KB超） */}
+                        {imageError && (
+                            <div className="service-form-error">
+                                {imageError}
+                            </div>
+                        )}
+
                         {service?.image_url && (
                             <img
                                 src={service.image_url}
@@ -344,7 +420,9 @@ export default function ServiceForm({
                                 className="service-form-image-preview"
                             />
                         )}
-                        {errors.image && (
+
+                        {/* ✅ サーバ側（Laravel） */}
+                        {errors?.image && (
                             <div className="service-form-error">
                                 {errors.image}
                             </div>
@@ -354,7 +432,7 @@ export default function ServiceForm({
                     {/* 保存ボタン */}
                     <button
                         type="submit"
-                        disabled={processing}
+                        disabled={processing || !!imageError}
                         className="service-form-submit-button"
                     >
                         保存

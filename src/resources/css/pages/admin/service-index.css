@@ -2,24 +2,84 @@
 /* =====================================================
    Admin Service Index (サービス一覧)
    ※ base/theme.css / base/global.css のトークンを使用
+   ※ Dark + Blue + Glass に統一
 ===================================================== */
 
 /* ページ全体ラッパー */
 .admin-service-page {
+    position: relative;
     min-height: 100vh;
-    background-color: var(--background);
+    background-color: var(--background, #060a12);
     padding: 1.75rem 1rem 2.75rem;
+    color: var(--foreground, #eaf1ff);
+    overflow-x: hidden;
+}
+
+/* 背景演出（ダーク + ブルー発光） */
+.admin-service-page::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background:
+        radial-gradient(980px 560px at 18% 8%, rgba(43, 124, 255, 0.22), transparent 62%),
+        radial-gradient(860px 560px at 88% 12%, rgba(0, 194, 255, 0.14), transparent 64%),
+        radial-gradient(760px 460px at 50% 95%, rgba(255, 255, 255, 0.05), transparent 62%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.00));
+}
+
+/* 薄いグリッド */
+.admin-service-page::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.16;
+    background-image:
+        linear-gradient(to right, rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(720px 540px at 50% 42%, rgba(0, 0, 0, 1), transparent 70%);
 }
 
 /* 中央カードコンテナ */
 .admin-service-container {
+    position: relative;
+    z-index: 1;
+
     max-width: var(--container-max);
     margin: 0 auto;
-    background-color: var(--card-bg);
+
+    background: linear-gradient(180deg,
+            rgba(255, 255, 255, 0.11),
+            rgba(255, 255, 255, 0.06));
     border-radius: 1.2rem;
-    border: 1px solid var(--border-color);
-    box-shadow: var(--shadow-medium);
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.14));
+    box-shadow: var(--shadow-medium, 0 16px 44px rgba(0, 0, 0, 0.45));
+
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
     padding: 1.75rem 1.5rem 2.25rem;
+}
+
+/* ほんのり上部発光 */
+.admin-service-container::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background:
+        radial-gradient(900px 260px at 12% 0%,
+            rgba(43, 124, 255, 0.20),
+            transparent 62%),
+        radial-gradient(520px 240px at 88% 0%,
+            rgba(0, 194, 255, 0.10),
+            transparent 62%);
+    opacity: 0.9;
 }
 
 /* ================================
@@ -28,6 +88,7 @@
 
 /* 戻るボタンエリア */
 .service-back-area {
+    position: relative;
     margin-bottom: 0.75rem;
 }
 
@@ -36,26 +97,36 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0.4rem 1.1rem;
+    padding: 0.45rem 1.1rem;
     font-size: 0.85rem;
-    font-family: var(--font-ui);
+    font-family: var(--font-ui, system-ui);
+    font-weight: 900;
+
     border-radius: 9999px;
-    border: 1px solid var(--border-color);
-    background-color: var(--color-bg-soft);
-    color: var(--salon-brown);
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.14));
+    background: rgba(10, 14, 26, 0.22);
+    color: rgba(255, 255, 255, 0.92);
+
     text-decoration: none;
     cursor: pointer;
+
+    box-shadow: var(--shadow-soft, 0 10px 28px rgba(0, 0, 0, 0.35));
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
     transition:
         background-color 0.15s ease,
         box-shadow 0.15s ease,
         transform 0.1s ease,
-        color 0.15s ease;
+        color 0.15s ease,
+        border-color 0.15s ease;
 }
 
 .service-back-button:hover {
-    background-color: var(--color-bg-light);
-    box-shadow: var(--shadow-soft);
-    transform: translateY(-1px);
+    background: rgba(10, 14, 26, 0.28);
+    border-color: var(--border-color-strong, rgba(255, 255, 255, 0.22));
+    box-shadow: var(--shadow-medium, 0 16px 44px rgba(0, 0, 0, 0.45));
+    transform: translateY(-2px);
 }
 
 /* タイトル + 新規作成ボタン */
@@ -69,10 +140,12 @@
 
 /* タイトル */
 .service-page-title {
-    font-family: var(--font-heading);
+    font-family: var(--font-heading, system-ui);
     font-size: 1.6rem;
-    color: var(--salon-brown);
+    color: rgba(255, 255, 255, 0.93);
     margin: 0;
+    font-weight: 900;
+    letter-spacing: 0.02em;
 }
 
 /* 新規作成ボタン */
@@ -80,25 +153,33 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0.45rem 1.4rem;
-    font-size: 0.9rem;
-    font-family: var(--font-ui);
-    border-radius: 9999px;
-    border: none;
-    background-color: var(--color-main);
+    padding: 0.5rem 1.35rem;
+    font-size: 0.92rem;
+    font-family: var(--font-ui, system-ui);
+    font-weight: 900;
+    letter-spacing: 0.03em;
+
+    border-radius: 12px;
+    border: 1px solid rgba(43, 124, 255, 0.35);
+    background: linear-gradient(90deg, rgba(43, 124, 255, 1), rgba(0, 194, 255, 0.95));
     color: #fff;
+
     cursor: pointer;
     text-decoration: none;
+
+    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.35);
+
     transition:
         background-color 0.15s ease,
         transform 0.1s ease,
-        box-shadow 0.15s ease;
+        box-shadow 0.15s ease,
+        filter 0.15s ease;
 }
 
 .service-create-button:hover {
-    background-color: #385a47;
-    box-shadow: var(--shadow-soft);
-    transform: translateY(-1px);
+    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.45);
+    transform: translateY(-2px);
+    filter: saturate(1.05);
 }
 
 /* ================================
@@ -115,26 +196,32 @@
 
 .service-filter-label {
     font-size: 0.95rem;
-    font-weight: 600;
-    color: var(--salon-brown);
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.88);
 }
 
+/* select をガラス入力に */
 .service-filter-select {
     min-width: 180px;
     border-radius: 9999px;
-    border: 1px solid var(--border-color);
-    padding: 0.45rem 1rem;
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.14));
+    padding: 0.5rem 1rem;
     font-size: 0.9rem;
-    background-color: #fff;
+
+    background: rgba(10, 14, 26, 0.35);
+    color: rgba(255, 255, 255, 0.92);
+
     transition:
         border-color 0.15s ease,
-        box-shadow 0.15s ease;
+        box-shadow 0.15s ease,
+        transform 0.15s ease;
 }
 
 .service-filter-select:focus {
     outline: none;
-    border-color: var(--color-accent);
-    box-shadow: 0 0 0 1px rgba(205, 175, 99, 0.25);
+    border-color: rgba(0, 194, 255, 0.55);
+    box-shadow: 0 0 0 4px rgba(0, 194, 255, 0.16);
+    transform: translateY(-1px);
 }
 
 /* ================================
@@ -144,10 +231,15 @@
 /* テーブルラッパー（横スクロール） */
 .service-table-wrapper {
     margin-top: 0.75rem;
-    background-color: var(--card-bg);
-    border-radius: var(--radius-base);
-    border: 1px solid var(--border-color);
-    box-shadow: var(--shadow-soft);
+
+    border-radius: var(--radius-base, 14px);
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.14));
+    background: rgba(10, 14, 26, 0.22);
+    box-shadow: var(--shadow-soft, 0 10px 28px rgba(0, 0, 0, 0.35));
+
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
     overflow-x: auto;
 }
 
@@ -160,17 +252,19 @@
     font-size: 0.9rem;
 }
 
+/* ヘッダー行（ガラス） */
 .service-table thead {
-    background-color: var(--color-bg-soft);
+    background: rgba(255, 255, 255, 0.06);
 }
 
 .service-table th,
 .service-table td {
-    padding: 0.5rem 0.75rem;
-    border-bottom: 1px solid var(--border-color);
-    border-right: 1px solid var(--border-color);
+    padding: 0.55rem 0.75rem;
+    border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.14));
+    border-right: 1px solid var(--border-color, rgba(255, 255, 255, 0.14));
     text-align: left;
     vertical-align: top;
+    color: rgba(255, 255, 255, 0.90);
 }
 
 .service-table th:last-child,
@@ -179,17 +273,19 @@
 }
 
 .service-table th {
-    font-weight: 600;
-    color: var(--salon-brown);
+    font-weight: 900;
+    color: rgba(255, 255, 255, 0.92);
     white-space: nowrap;
+    letter-spacing: 0.01em;
 }
 
+/* zebra */
 .service-table tbody tr:nth-child(even) {
-    background-color: var(--color-bg-light);
+    background: rgba(255, 255, 255, 0.03);
 }
 
 .service-table tbody tr:hover {
-    background-color: rgba(0, 0, 0, 0.02);
+    background: rgba(0, 194, 255, 0.06);
 }
 
 /* 特徴リスト */
@@ -203,48 +299,55 @@
 }
 
 .service-features-empty {
-    color: rgba(0, 0, 0, 0.4);
+    color: rgba(234, 241, 255, 0.55);
     font-size: 0.85rem;
 }
 
 /* 人気ラベル */
 .service-popular-label {
-    color: #b43d3d;
-    font-weight: 700;
+    color: rgba(255, 170, 178, 0.95);
+    font-weight: 900;
 }
 
 .service-popular-empty {
-    color: rgba(0, 0, 0, 0.4);
+    color: rgba(234, 241, 255, 0.55);
 }
 
 /* 公開/非公開切り替えボタン */
 .service-active-toggle {
-    padding: 0.3rem 0.8rem;
+    padding: 0.35rem 0.85rem;
     border-radius: 9999px;
     font-size: 0.85rem;
-    font-family: var(--font-ui);
-    border: none;
+    font-family: var(--font-ui, system-ui);
+    font-weight: 900;
+
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.14));
     cursor: pointer;
+
     transition:
         background-color 0.15s ease,
         color 0.15s ease,
         transform 0.1s ease,
-        box-shadow 0.15s ease;
+        box-shadow 0.15s ease,
+        border-color 0.15s ease;
 }
 
 .service-active-toggle--active {
-    background-color: #16a34a;
-    color: #fff;
+    background: rgba(22, 163, 74, 0.20);
+    border-color: rgba(22, 163, 74, 0.35);
+    color: rgba(255, 255, 255, 0.92);
 }
 
 .service-active-toggle--inactive {
-    background-color: #e5e5e5;
-    color: #555;
+    background: rgba(255, 255, 255, 0.06);
+    border-color: var(--border-color, rgba(255, 255, 255, 0.14));
+    color: rgba(234, 241, 255, 0.75);
 }
 
 .service-active-toggle:hover {
-    box-shadow: var(--shadow-soft);
-    transform: translateY(-1px);
+    box-shadow: var(--shadow-soft, 0 10px 28px rgba(0, 0, 0, 0.35));
+    transform: translateY(-2px);
+    border-color: var(--border-color-strong, rgba(255, 255, 255, 0.22));
 }
 
 /* 操作リンク */
@@ -257,19 +360,19 @@
     text-decoration: none;
     margin-right: 0.5rem;
     cursor: pointer;
-    transition: opacity 0.15s ease;
+    transition: opacity 0.15s ease, color 0.15s ease;
 }
 
 .service-action-link:hover {
-    opacity: 0.7;
+    opacity: 0.85;
 }
 
 .service-action-link--edit {
-    color: #2563eb;
+    color: var(--color-accent, #2b7cff);
 }
 
 .service-action-link--delete {
-    color: #b91c1c;
+    color: rgba(255, 90, 107, 0.95);
 }
 
 /* ============================================
@@ -366,7 +469,7 @@
 
     .service-back-button {
         font-size: 0.8rem;
-        padding: 0.4rem 0.9rem;
+        padding: 0.45rem 0.95rem;
     }
 
     .service-filter-label {
@@ -375,7 +478,7 @@
 
     .service-filter-select {
         font-size: 0.85rem;
-        padding: 0.4rem 0.9rem;
+        padding: 0.45rem 0.9rem;
     }
 
     .service-table {
@@ -385,10 +488,22 @@
 
     .service-active-toggle {
         font-size: 0.8rem;
-        padding: 0.25rem 0.6rem;
+        padding: 0.3rem 0.65rem;
     }
 
     .service-action-link {
         font-size: 0.8rem;
+    }
+}
+
+/* Motion safety */
+@media (prefers-reduced-motion: reduce) {
+
+    .service-back-button,
+    .service-create-button,
+    .service-filter-select,
+    .service-active-toggle,
+    .service-action-link {
+        transition: none;
     }
 }

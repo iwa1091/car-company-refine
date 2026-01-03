@@ -28,6 +28,10 @@ class ServiceController extends Controller
                 'description' => $service->description,
                 'duration_minutes' => $service->duration_minutes,
                 'price' => $service->price,
+
+                // ✅ 追加
+                'price_text' => $service->price_text,
+
                 'sort_order' => $service->sort_order,
                 'is_active' => $service->is_active,
                 'is_popular' => $service->is_popular,
@@ -76,19 +80,28 @@ class ServiceController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:services,name',
-            'description' => 'nullable|string',
-            'duration_minutes' => 'required|integer|min:1|max:480',
-            'price' => 'required|integer|min:0',
-            'sort_order' => 'nullable|integer|min:0',
-            'is_active' => 'required',
-            'is_popular' => 'nullable',
-            'category_id' => 'nullable|exists:categories,id',
-            'image' => 'nullable|image|max:10240',
-            'features' => 'nullable|array',
-            'features.*' => 'string|max:255',
-        ]);
+        $validated = $request->validate(
+            [
+                'name' => 'required|string|max:255|unique:services,name',
+                'description' => 'nullable|string',
+                'duration_minutes' => 'required|integer|min:1|max:480',
+                'price' => 'required|integer|min:0',
+
+                // ✅ 追加
+                'price_text' => 'nullable|string|max:255',
+
+                'sort_order' => 'nullable|integer|min:0',
+                'is_active' => 'required',
+                'is_popular' => 'nullable',
+                'category_id' => 'nullable|exists:categories,id',
+                'image' => 'nullable|image|max:200',
+                'features' => 'nullable|array',
+                'features.*' => 'string|max:255',
+            ],
+            [
+                'image.max' => '画像は200KB以下にしてください。',
+            ]
+        );
 
         // ✅ booleanを安全に変換（Inertiaは文字列で送るため）
         $validated['is_active'] = filter_var($request->input('is_active'), FILTER_VALIDATE_BOOLEAN);
@@ -119,6 +132,10 @@ class ServiceController extends Controller
             'description' => $service->description,
             'duration_minutes' => $service->duration_minutes,
             'price' => $service->price,
+
+            // ✅ 追加
+            'price_text' => $service->price_text,
+
             'sort_order' => $service->sort_order,
             'is_active' => $service->is_active,
             'is_popular' => $service->is_popular,
@@ -138,19 +155,28 @@ class ServiceController extends Controller
      */
     public function update(Request $request, Service $service)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:services,name,' . $service->id,
-            'description' => 'nullable|string',
-            'duration_minutes' => 'required|integer|min:1|max:480',
-            'price' => 'required|integer|min:0',
-            'sort_order' => 'nullable|integer|min:0',
-            'is_active' => 'required',
-            'is_popular' => 'nullable',
-            'category_id' => 'nullable|exists:categories,id',
-            'image' => 'nullable|image|max:2048',
-            'features' => 'nullable|array',
-            'features.*' => 'string|max:255',
-        ]);
+        $validated = $request->validate(
+            [
+                'name' => 'required|string|max:255|unique:services,name,' . $service->id,
+                'description' => 'nullable|string',
+                'duration_minutes' => 'required|integer|min:1|max:480',
+                'price' => 'required|integer|min:0',
+
+                // ✅ 追加
+                'price_text' => 'nullable|string|max:255',
+
+                'sort_order' => 'nullable|integer|min:0',
+                'is_active' => 'required',
+                'is_popular' => 'nullable',
+                'category_id' => 'nullable|exists:categories,id',
+                'image' => 'nullable|image|max:200',
+                'features' => 'nullable|array',
+                'features.*' => 'string|max:255',
+            ],
+            [
+                'image.max' => '画像は200KB以下にしてください。',
+            ]
+        );
 
         $validated['is_active'] = filter_var($request->input('is_active'), FILTER_VALIDATE_BOOLEAN);
         $validated['is_popular'] = filter_var($request->input('is_popular'), FILTER_VALIDATE_BOOLEAN);
@@ -199,16 +225,33 @@ class ServiceController extends Controller
         ]);
     }
 
-        /**
+    /**
      * 一般ユーザー向け：サービス一覧API（JSON）
      */
     public function apiList()
     {
-        $services = Service::where('is_active', true)
+        $services = Service::with(['category:id,name'])
+            ->where('is_active', true)
             ->orderBy('sort_order', 'asc')
-            ->get(['id', 'name', 'price', 'duration_minutes']);
+            ->get(['id', 'name', 'price', 'price_text', 'duration_minutes', 'category_id']);
 
-        return response()->json($services);
+        $payload = $services->map(function ($s) {
+            return [
+                'id' => $s->id,
+                'name' => $s->name,
+                'price' => $s->price,
+
+                // ✅ 追加（フロントが使わなくてもOK：不一致になりにくい）
+                'price_text' => $s->price_text,
+
+                'duration_minutes' => $s->duration_minutes,
+
+                // 追加（ReservationForm が参照できるように）
+                'category_id' => $s->category_id,
+                'category_name' => optional($s->category)->name,
+            ];
+        });
+
+        return response()->json($payload);
     }
-
 }

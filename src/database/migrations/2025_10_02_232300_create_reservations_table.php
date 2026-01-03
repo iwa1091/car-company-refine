@@ -30,11 +30,26 @@ return new class extends Migration
                 ->onDelete('cascade');
 
             /**
+             * コース（追加）
+             * - 既存データ/seed との互換を考慮して nullable
+             * - 必須にしたい場合は API バリデーション側で required にするのが安全
+             */
+            $table->string('course', 100)->nullable();
+
+            /**
              * 予約者情報（ゲスト含む）
              */
             $table->string('name');
             $table->string('email');
-            $table->string('phone')->nullable();   // ← 追加
+            $table->string('phone')->nullable();
+
+            /**
+             * 車両情報（追加）
+             * - 既存データ/seed との互換を考慮して nullable で追加
+             * - 「必須」にしたい場合は API バリデーション側で required にするのが安全
+             */
+            $table->string('maker', 50)->nullable();
+            $table->string('car_model', 100)->nullable();
 
             /**
              * 日付・時間
@@ -58,7 +73,7 @@ return new class extends Migration
             /**
              * マイページ紐づけ用の予約コード（RSVxxxxxx）
              */
-            $table->string('reservation_code')->nullable(); // ← 追加
+            $table->string('reservation_code')->nullable();
 
             $table->timestamps();
         });

@@ -11,17 +11,33 @@ class ReservationConfirmedMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $reservation;
+    public Reservation $reservation;
+    public ?string $cancelUrl;
 
-    public function __construct(Reservation $reservation)
+    /**
+     * @param Reservation   $reservation
+     * @param string|null   $cancelUrl  キャンセル導線（任意）
+     */
+    public function __construct(Reservation $reservation, ?string $cancelUrl = null)
     {
         $this->reservation = $reservation;
+        $this->cancelUrl = $cancelUrl;
     }
 
     public function build()
     {
-        return $this->subject('【Lash Brow Ohana】ご予約ありがとうございます')
+        // Blade 側で service を参照しても落ちないように（未ロードならロード）
+        try {
+            $this->reservation->loadMissing('service');
+        } catch (\Throwable $e) {
+            // メール送信自体は続行
+        }
+
+        return $this->subject('【REFINE】ご予約ありがとうございます')
             ->view('emails.reservation-confirmed')
-            ->with(['reservation' => $this->reservation]);
+            ->with([
+                'reservation' => $this->reservation,
+                'cancelUrl'   => $this->cancelUrl,
+            ]);
     }
 }

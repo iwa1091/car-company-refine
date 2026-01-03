@@ -1,24 +1,14 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| API Routes
+| API Routes（JSONのみ）
 |--------------------------------------------------------------------------
-| ここでは JSON API のみを扱います。
 | Inertia ページは web.php で処理します。
 |--------------------------------------------------------------------------
 */
-
-// ============================================================
-// 🔐 ログイン中ユーザー情報（必要な場合に使用）
-// ============================================================
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
-
 
 // ============================================================
 // 🕒 営業時間設定 API（BusinessHourController）
@@ -26,59 +16,52 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 use App\Http\Controllers\Admin\BusinessHourController;
 
 Route::prefix('business-hours')->group(function () {
+    // ReservationList.jsx が /api/business-hours/weekly を叩くため残す
     Route::get('/weekly', [BusinessHourController::class, 'getWeekly']);
     Route::put('/weekly', [BusinessHourController::class, 'updateWeekly']);
 
+    // ReservationEdit.jsx が /api/business-hours を叩くため残す
     Route::get('/', [BusinessHourController::class, 'getHours']);
     Route::put('/', [BusinessHourController::class, 'updateHours']);
 });
 
 
 // ============================================================
-// 🧑‍💼 管理者向け API
+// 🧑‍💼 管理者向け API（React 管理画面 fetch 用）
 // ============================================================
 //
-// ※ 認証（auth:sanctum + admin guard）は必要なら後で追加できます。
-//    現在はフロントの React 管理画面が動作するように公開しています。
+// ※ 現状のフロントが /api/admin/... を叩いている前提で維持します。
+//    （方式Aで /admin/api に寄せるのは後で段階的に）
 // ============================================================
 
 use App\Http\Controllers\Admin\AdminReservationController;
 use App\Http\Controllers\Admin\ServiceController;
-use App\Http\Controllers\Admin\CustomerController;
 
 Route::prefix('admin')->group(function () {
 
-    // ============================================
-    // 🗂 サービス管理 API
-    // ============================================
+    // サービス管理 API（React管理画面用に残す）
     Route::get('services', [ServiceController::class, 'apiIndex']);
     Route::post('services', [ServiceController::class, 'apiStore']);
     Route::put('services/{service}', [ServiceController::class, 'apiUpdate']);
     Route::delete('services/{service}', [ServiceController::class, 'apiDestroy']);
 
-    // ============================================
-    // 📅 管理：予約一覧 API（React 管理画面用）
-    // ============================================
+    // 予約一覧/削除 API（ReservationList.jsx が使用）
     Route::get('reservations', [AdminReservationController::class, 'apiIndex']);
     Route::delete('reservations/{id}', [AdminReservationController::class, 'apiDestroy']);
-
-    // ============================================
-    // 👤 顧客管理 API
-    // ============================================
-    Route::get('customers', [CustomerController::class, 'apiIndex']);
-    Route::get('customers/{id}', [CustomerController::class, 'apiShow']);
-    Route::put('customers/{id}', [CustomerController::class, 'apiUpdate']);
-    Route::delete('customers/{id}', [CustomerController::class, 'apiDestroy']);
 });
 
 
 // ============================================================
-// 🧾 一般ユーザー向け API（予約フォーム・メニュー表示）
+// 🧾 一般ユーザー向け API（予約フォーム用）
 // ============================================================
+
 
 use App\Http\Controllers\Api\ReservationController as ApiReservationController;
 
-// サービス一覧（メニュー・料金ページ用の JSON データ）
+
+Route::get('/reservations/month-schedule', [ApiReservationController::class, 'monthSchedule']);
+
+// サービス一覧（予約フォームが参照している可能性が高いので残す）
 Route::get('/services', [ServiceController::class, 'apiList']);
 
 // 予約作成

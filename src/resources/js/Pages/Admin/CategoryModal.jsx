@@ -1,33 +1,59 @@
 // /resources/js/Pages/Admin/CategoryModal.jsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Inertia } from "@inertiajs/inertia";
+import { router, usePage } from "@inertiajs/react";
 
 // モジュール化した CSS をインポート
 import "../../../css/pages/admin/category-modal.css";
 
 export default function CategoryModal({ isOpen, onClose, onCreated }) {
+    const { props } = usePage();
+    const flashCategory = props?.flash?.category;
+
     const [name, setName] = useState("");
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
+
+    // ✅ もしサーバーが flash.category を返してくる構成なら、
+    // 成功後に自動で拾って親へ渡す（成功時にモーダルが閉じない問題を潰す）
+    useEffect(() => {
+        if (!isOpen) return;
+        if (!flashCategory) return;
+
+        // flash に category が来たら親へ通知して閉じる
+        if (onCreated) onCreated(flashCategory);
+        setName("");
+        onClose?.();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [flashCategory, isOpen]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
         setLoading(true);
         setErrors({});
 
-        Inertia.post(
+        router.post(
             "/admin/categories",
             { name },
             {
-                onSuccess: (page) => {
+                preserveScroll: true,
+                // モーダル内のPOSTでページ状態を壊したくない場合に有効
+                // preserveState: true, // 必要ならON（プロジェクト方針に合わせて）
+                onSuccess: (arg) => {
+                    // Inertiaのバージョン差を吸収（page が来る場合 / event.detail.page の場合）
+                    const page = arg?.props ? arg : arg?.detail?.page;
+
                     const createdCategory =
-                        page.props.flash?.category || page.props.category;
+                        page?.props?.flash?.category ||
+                        page?.props?.category ||
+                        null;
+
+                    // ✅ flash が共有されていない構成でも、page.props 側から拾えるなら即反映
                     if (createdCategory && onCreated) {
-                        onCreated(createdCategory ?? null);
+                        onCreated(createdCategory);
+                        setName("");
+                        onClose?.();
                     }
-                    setName("");
-                    onClose();
                 },
                 onError: (err) => {
                     // Laravel バリデーションエラーを errors にセット
@@ -83,7 +109,8 @@ export default function CategoryModal({ isOpen, onClose, onCreated }) {
                                             setName(e.target.value)
                                         }
                                         className="category-modal-input"
-                                        placeholder="例: まつ毛エクステ"
+                                        placeholder="例: CERAMIC COATING"
+                                        disabled={loading}
                                     />
                                     {errors.name && (
                                         <p className="category-modal-error">
@@ -97,12 +124,13 @@ export default function CategoryModal({ isOpen, onClose, onCreated }) {
                                         type="button"
                                         className="category-modal-button category-modal-button--cancel"
                                         onClick={onClose}
+                                        disabled={loading}
                                     >
                                         キャンセル
                                     </button>
                                     <button
                                         type="submit"
-                                        disabled={loading}
+                                        disabled={loading || !name.trim()}
                                         className="category-modal-button category-modal-button--submit"
                                     >
                                         {loading ? "保存中..." : "保存"}

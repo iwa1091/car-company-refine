@@ -1,44 +1,128 @@
 // /resources/js/Pages/Admin/ReservationList.jsx
 import { useEffect, useState } from "react";
 import { Link } from "@inertiajs/react";
+import { route } from "ziggy-js";
 import "../../../css/pages/admin/reservation-list.css";
 
-// ⏰ 時刻表示を日本時間の「HH:mm」形式に揃えるヘルパー
+// ✅ JST（Asia/Tokyo）で "YYYY年MM月DD日" を返すフォーマッタ
+const dateFormatterJST = new Intl.DateTimeFormat("ja-JP", {
+    timeZone: "Asia/Tokyo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+});
+
+/**
+ * ⏰ 時刻表示を「HH:mm」に揃える（管理画面は “表示の安定” を優先）
+ *
+ * 想定入力（API次第で揺れる）
+ * - "09:30:00" / "09:30"
+ * - "2025-12-29T09:30:00.000000Z"（ISO）
+ * - { date: "2025-12-29 09:30:00.000000", timezone: "UTC", ... }（CarbonがJSON化）
+ *
+ * 方針：
+ * - Date変換に頼らず、とにかく「文字列からHH:mmを抜く」
+ * - それでも取れない時だけ保険で Date を試す（最終手段）
+ */
 function formatTimeToHHmm(value) {
-    if (!value) return "";
+    if (value == null) return "";
 
-    // すでに "HH:MM" or "HH:MM:SS" 形式なら、そのまま / 切り詰めて利用
-    if (/^\d{2}:\d{2}(:\d{2})?$/.test(value)) {
-        return value.slice(0, 5); // "HH:MM"
+    // 1) value がオブジェクト（CarbonがJSON化された等）の場合
+    if (typeof value === "object") {
+        // よくある形: { date: "...", timezone: "...", ... }
+        if (value.date) {
+            return formatTimeToHHmm(value.date);
+        }
+        // 想定外は JSON 文字列化して拾えるか試す
+        try {
+            return formatTimeToHHmm(JSON.stringify(value));
+        } catch {
+            return "";
+        }
     }
 
-    // "2025-11-28T06:00:00.000000Z" のような ISO 文字列の場合
-    const d = new Date(value);
-    if (isNaN(d.getTime())) {
-        // パースできなければ元の値をそのまま返す（保険）
-        return value;
+    const str = String(value).trim();
+    if (!str) return "";
+
+    // 2) "HH:MM" / "HH:MM:SS" はそのまま
+    if (/^\d{2}:\d{2}(:\d{2})?$/.test(str)) {
+        return str.slice(0, 5);
     }
 
-    const hours = String(d.getHours()).padStart(2, "0");
-    const minutes = String(d.getMinutes()).padStart(2, "0");
-    return `${hours}:${minutes}`;
+    // 3) どんな文字列でも "HH:MM" を抜く（ISOでもスペース区切りでもOK）
+    const m = str.match(/\b(\d{2}:\d{2})(?::\d{2})?\b/);
+    if (m) return m[1];
+
+    // 4) それでもダメなら Date を試す（最終手段：ズレる可能性があるので保険扱い）
+    const d = new Date(str);
+    if (!isNaN(d.getTime())) {
+        const hh = String(d.getHours()).padStart(2, "0");
+        const mm = String(d.getMinutes()).padStart(2, "0");
+        return `${hh}:${mm}`;
+    }
+
+    return "";
 }
 
-// 📅 日付表示を「0000年00月00日」に揃えるヘルパー
+/**
+ * 📅 日付表示を「YYYY年MM月DD日」に揃える
+ * - "YYYY-MM-DD" は new Date() でズレやすいので手組み
+ */
 function formatDateToJapanese(value) {
     if (!value) return "";
 
-    const d = new Date(value);
-    if (isNaN(d.getTime())) {
-        // パースできない場合は元の値をそのまま返す
-        return value;
+    const str = String(value).trim();
+
+    // "YYYY-MM-DD" は安全に手組み
+    if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+        const [y, m, d] = str.split("-");
+        return `${y}年${m}月${d}日`;
     }
 
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
+    // それ以外は DateTimeFormat（JST）
+    const d = new Date(str);
+    if (isNaN(d.getTime())) {
+        return str;
+    }
 
-    return `${year}年${month}月${day}日`;
+    const formatted = dateFormatterJST.format(d); // 例: "2025/12/29"
+    const parts = formatted.split(/[\/.-]/);
+    if (parts.length >= 3) {
+        const [y, m, day] = parts;
+        return `${y}年${m}月${day}日`;
+    }
+
+    return formatted;
+}
+
+/**
+ * ✅ "YYYY-MM-DD" をローカル日付として安全に Date 化（曜日判定用）
+ */
+function safeDateFromYmd(value) {
+    if (!value) return null;
+    const str = String(value).trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+        const [y, m, d] = str.split("-").map(Number);
+        return new Date(y, m - 1, d);
+    }
+    const dt = new Date(str);
+    return isNaN(dt.getTime()) ? null : dt;
+}
+
+/**
+ * ✅ 予約の並び替え用キー（date → start_time の昇順）
+ * - Date変換に頼らず、「YYYY-MM-DD HH:mm」形式の文字列に寄せて比較する
+ */
+function reservationSortKey(r) {
+    // date は "YYYY-MM-DD" 想定。ISOなどでも先頭10文字を拾う
+    const rawDate = r?.date?.date ? String(r.date.date) : String(r?.date ?? "");
+    const d = rawDate.trim();
+    const dateKey = /^\d{4}-\d{2}-\d{2}$/.test(d) ? d : d.slice(0, 10);
+
+    // start_time は既存関数で "HH:mm" に寄せる
+    const timeKey = formatTimeToHHmm(r?.start_time) || "00:00";
+
+    return `${dateKey} ${timeKey}`;
 }
 
 export default function ReservationList() {
@@ -52,7 +136,7 @@ export default function ReservationList() {
             try {
                 const now = new Date();
                 const year = now.getFullYear();
-                const month = now.getMonth() + 1; // 現在の月
+                const month = now.getMonth() + 1;
 
                 const res = await fetch(
                     `/api/business-hours/weekly?year=${year}&month=${month}`
@@ -75,7 +159,20 @@ export default function ReservationList() {
                 const res = await fetch("/api/admin/reservations");
                 if (res.ok) {
                     const data = await res.json();
-                    setReservations(data);
+
+                    // ✅ 予約の日時が早い順（date → start_time）に並び替え
+                    const sorted = Array.isArray(data)
+                        ? [...data].sort((a, b) =>
+                            reservationSortKey(a).localeCompare(
+                                reservationSortKey(b)
+                            )
+                        )
+                        : [];
+
+                    setReservations(sorted);
+
+                    // ✅ デバッグしたい時は一時的に有効化
+                    // console.log("API sample:", data?.[0]?.date, data?.[0]?.start_time);
                 }
             } catch (err) {
                 console.error("予約一覧の取得に失敗:", err);
@@ -87,15 +184,19 @@ export default function ReservationList() {
     }, []);
 
     // 予約の時間表示（営業中/営業時間外のラベルも付ける）
-    const getFormattedTime = (date, startTimeRaw) => {
+    const getFormattedTime = (dateObj, startTimeRaw) => {
         const dayOfWeekNames = ["日", "月", "火", "水", "木", "金", "土"];
-        const selectedDay = dayOfWeekNames[date.getDay()];
+        const dayIndex =
+            dateObj instanceof Date && !isNaN(dateObj.getTime())
+                ? dateObj.getDay()
+                : 0;
 
-        // 営業時間データを取得（※週は考慮せず曜日ベースで判定＝既存仕様のまま）
-        const hourInfo = businessHours.find(
-            (h) => h.day_of_week === selectedDay
-        );
+        const selectedDay = dayOfWeekNames[dayIndex];
 
+        // ※週は考慮せず曜日ベース（既存仕様）
+        const hourInfo = businessHours.find((h) => h.day_of_week === selectedDay);
+
+        // ✅ 表示は文字列抽出で固定（ズレ防止）
         const startTime = formatTimeToHHmm(startTimeRaw);
 
         if (hourInfo && !hourInfo.is_closed) {
@@ -116,16 +217,11 @@ export default function ReservationList() {
     };
 
     if (loading) {
-        return (
-            <p className="admin-reservation-loading">
-                読み込み中...
-            </p>
-        );
+        return <p className="admin-reservation-loading">読み込み中...</p>;
     }
 
     return (
         <div className="admin-reservation-page">
-            {/* 🔙 ダッシュボードへ戻るボタン */}
             <div className="admin-reservation-back">
                 <Link
                     href={route("admin.dashboard")}
@@ -151,50 +247,46 @@ export default function ReservationList() {
                         </tr>
                     </thead>
                     <tbody>
-                        {reservations.map((r) => (
-                            <tr key={r.id} className="admin-reservation-row">
-                                <td className="admin-reservation-cell admin-reservation-cell--id">
-                                    {r.id}
-                                </td>
-                                <td className="admin-reservation-cell">
-                                    {r.name}
-                                </td>
-                                <td className="admin-reservation-cell">
-                                    {r.service_name}
-                                </td>
-                                <td className="admin-reservation-cell admin-reservation-cell--date">
-                                    {formatDateToJapanese(r.date)}
-                                </td>
-                                <td className="admin-reservation-cell admin-reservation-cell--time">
-                                    {getFormattedTime(
-                                        new Date(r.date),
-                                        r.start_time
-                                    )}
-                                </td>
-                                <td className="admin-reservation-cell">
-                                    <span className="admin-reservation-status">
-                                        {r.status || "予約中"}
-                                    </span>
-                                </td>
-                                <td className="admin-reservation-actions">
-                                    <Link
-                                        href={route(
-                                            "admin.reservations.edit",
-                                            r.id
-                                        )}
-                                        className="admin-reservation-button admin-reservation-button--edit"
-                                    >
-                                        編集
-                                    </Link>
-                                    <button
-                                        onClick={() => handleDelete(r.id)}
-                                        className="admin-reservation-button admin-reservation-button--delete"
-                                    >
-                                        削除
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
+                        {reservations.map((r) => {
+                            const dateObj = safeDateFromYmd(r.date);
+
+                            return (
+                                <tr key={r.id} className="admin-reservation-row">
+                                    <td className="admin-reservation-cell admin-reservation-cell--id">
+                                        {r.id}
+                                    </td>
+                                    <td className="admin-reservation-cell">{r.name}</td>
+                                    <td className="admin-reservation-cell">
+                                        {r.service_name}
+                                    </td>
+                                    <td className="admin-reservation-cell admin-reservation-cell--date">
+                                        {formatDateToJapanese(r.date)}
+                                    </td>
+                                    <td className="admin-reservation-cell admin-reservation-cell--time">
+                                        {getFormattedTime(dateObj, r.start_time)}
+                                    </td>
+                                    <td className="admin-reservation-cell">
+                                        <span className="admin-reservation-status">
+                                            {r.status || "予約中"}
+                                        </span>
+                                    </td>
+                                    <td className="admin-reservation-actions">
+                                        <Link
+                                            href={route("admin.reservations.edit", r.id)}
+                                            className="admin-reservation-button admin-reservation-button--edit"
+                                        >
+                                            編集
+                                        </Link>
+                                        <button
+                                            onClick={() => handleDelete(r.id)}
+                                            className="admin-reservation-button admin-reservation-button--delete"
+                                        >
+                                            削除
+                                        </button>
+                                    </td>
+                                </tr>
+                            );
+                        })}
                     </tbody>
                 </table>
             </div>
