@@ -155,6 +155,10 @@
     padding: 0 0.95rem;
     outline: none;
     transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+
+    /* ✅ 枠からはみ出し防止（width 100% + padding 対策） */
+    box-sizing: border-box;
+    max-width: 100%;
 }
 
 .admin-login__input::placeholder {
@@ -195,6 +199,10 @@
     box-shadow: 0 12px 26px rgba(0, 0, 0, 0.35);
     cursor: pointer;
     transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+
+    /* ✅ 枠からはみ出し防止 */
+    box-sizing: border-box;
+    max-width: 100%;
 }
 
 .admin-login__button:hover {
@@ -234,10 +242,19 @@
     opacity: 0.95;
 }
 
-/* Responsive */
-@media (max-width: 480px) {
+/* ============================================
+   Responsive（指定：スマホ〜640 / タブレット 641〜1024 / PC 1025〜）
+============================================ */
+
+/* スマホ（〜640px） */
+@media (max-width: 640px) {
+    .admin-login {
+        padding: 2.4rem 0.9rem;
+    }
+
     .admin-login__card {
-        padding: 1.7rem 1.25rem 1.25rem;
+        padding: 1.6rem 1.15rem 1.25rem;
+        border-radius: 16px;
     }
 
     .admin-login__title {
@@ -246,6 +263,81 @@
 
     .admin-login__subtitle {
         font-size: 0.92rem;
+    }
+
+    .admin-login__input {
+        height: 44px;
+        padding: 0 0.85rem;
+        border-radius: 12px;
+    }
+
+    .admin-login__button {
+        height: 46px;
+        border-radius: 12px;
+    }
+}
+
+/* iPhone SE（幅 375px 対応） */
+@media (max-width: 375px) {
+    .admin-login {
+        padding: 2.1rem 0.75rem;
+    }
+
+    .admin-login__card {
+        padding: 1.35rem 0.95rem 1.1rem;
+        border-radius: 14px;
+    }
+
+    .admin-login__badge {
+        height: 24px;
+        font-size: 0.74rem;
+        padding: 0 0.65rem;
+    }
+
+    .admin-login__title {
+        font-size: 1.42rem;
+    }
+
+    .admin-login__subtitle {
+        font-size: 0.9rem;
+    }
+
+    .admin-login__label {
+        font-size: 0.9rem;
+    }
+
+    .admin-login__error {
+        font-size: 0.85rem;
+    }
+}
+
+/* タブレット（641px〜1024px） */
+@media (min-width: 641px) and (max-width: 1024px) {
+    .admin-login {
+        padding: 3.2rem 1.2rem;
+    }
+
+    .admin-login__card {
+        padding: 2rem 1.6rem 1.45rem;
+    }
+
+    .admin-login__title {
+        font-size: 1.75rem;
+    }
+}
+
+/* PC（1025px〜） */
+@media (min-width: 1025px) {
+    .admin-login {
+        padding: 3.8rem 1.5rem;
+    }
+
+    .admin-login__card {
+        padding: 2.2rem 1.85rem 1.6rem;
+    }
+
+    .admin-login__title {
+        font-size: 1.85rem;
     }
 }
 

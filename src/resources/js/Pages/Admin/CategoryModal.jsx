@@ -1,5 +1,5 @@
 // /resources/js/Pages/Admin/CategoryModal.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { router, usePage } from "@inertiajs/react";
 
@@ -14,13 +14,21 @@ export default function CategoryModal({ isOpen, onClose, onCreated }) {
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
 
+    // ✅ 同じ flash.category を「開くたび」に処理して即閉じるのを防ぐ
+    // （保存後に flash が残り、次回 open 時に useEffect が走って勝手に close されるのを防止）
+    const handledFlashIdRef = useRef(null);
+
     // ✅ もしサーバーが flash.category を返してくる構成なら、
     // 成功後に自動で拾って親へ渡す（成功時にモーダルが閉じない問題を潰す）
     useEffect(() => {
         if (!isOpen) return;
         if (!flashCategory) return;
 
-        // flash に category が来たら親へ通知して閉じる
+        // flash に category が来たら親へ通知して閉じる（ただし同じものは二重処理しない）
+        const currentId = flashCategory?.id ?? null;
+        if (currentId != null && handledFlashIdRef.current === currentId) return;
+        handledFlashIdRef.current = currentId;
+
         if (onCreated) onCreated(flashCategory);
         setName("");
         onClose?.();
@@ -50,6 +58,12 @@ export default function CategoryModal({ isOpen, onClose, onCreated }) {
 
                     // ✅ flash が共有されていない構成でも、page.props 側から拾えるなら即反映
                     if (createdCategory && onCreated) {
+                        // 同じIDのflashを次回open時に再処理しないよう、ここでも記録しておく（保険）
+                        const createdId = createdCategory?.id ?? null;
+                        if (createdId != null) {
+                            handledFlashIdRef.current = createdId;
+                        }
+
                         onCreated(createdCategory);
                         setName("");
                         onClose?.();

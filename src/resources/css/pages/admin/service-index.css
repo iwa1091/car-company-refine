@@ -247,7 +247,6 @@
 .service-table {
     width: 100%;
     min-width: 960px;
-    /* スマホでは横スクロール前提 */
     border-collapse: collapse;
     font-size: 0.9rem;
 }
@@ -350,33 +349,90 @@
     border-color: var(--border-color-strong, rgba(255, 255, 255, 0.22));
 }
 
-/* 操作リンク */
+/* ================================
+   操作（編集 / 削除）: 予約一覧のピルボタンに合わせる
+================================ */
+
+/* td を flex 化して、予約一覧の actions と同じ並びに */
 .service-actions-cell {
     white-space: nowrap;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
 }
 
-.service-action-link {
-    font-size: 0.85rem;
-    text-decoration: none;
-    margin-right: 0.5rem;
+/*
+  🔥重要：
+  ここで button.service-action-link に background: none; を入れると
+  background-color まで透明に上書きされて「赤が消える」原因になります。
+  → ボタンのリセットは background を触らない。
+*/
+button.service-action-link {
+    -webkit-appearance: none;
+    appearance: none;
+    border: none;
+    font: inherit;
+    /* ピルの padding は .service-action-link 側で付ける */
     cursor: pointer;
-    transition: opacity 0.15s ease, color 0.15s ease;
 }
 
-.service-action-link:hover {
-    opacity: 0.85;
+/* ピル共通（reservation-list の .admin-reservation-button と同等） */
+.service-action-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0.3rem 0.8rem;
+    font-size: 0.8rem;
+    border-radius: 9999px;
+    border: none;
+
+    cursor: pointer;
+    text-decoration: none;
+    font-family: var(--font-ui);
+
+    transition:
+        background-color 0.15s ease,
+        box-shadow 0.15s ease,
+        transform 0.1s ease,
+        color 0.15s ease;
 }
 
+/* 編集ボタン（予約一覧の edit と同じ要領。色はテーマの main を採用） */
 .service-action-link--edit {
-    color: var(--color-accent, #2b7cff);
+    background-color: var(--color-main);
+    color: #ffffff;
 }
 
+.service-action-link--edit:hover {
+    /* “浮き・影” は reservation-list と同じ */
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-1px);
+    /* 色だけはダークUI用に少し落とす（グリーン固定にしない） */
+    filter: brightness(0.92);
+}
+
+/* 削除ボタン：reservation-list と完全一致 */
 .service-action-link--delete {
-    color: rgba(255, 90, 107, 0.95);
+    background-color: #b43d3d;
+    color: #ffffff;
+}
+
+.service-action-link--delete:hover {
+    background-color: #912f2f;
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-1px);
+}
+
+.service-action-link:focus-visible {
+    outline: none;
+    box-shadow:
+        0 0 0 4px rgba(0, 194, 255, 0.16),
+        var(--shadow-soft);
 }
 
 /* ============================================
-   レスポンシブ
+   レスポンシブ（既存のまま）
 ============================================ */
 
 /* ■ PC（1024px〜） */

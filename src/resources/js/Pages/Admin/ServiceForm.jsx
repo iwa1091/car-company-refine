@@ -22,6 +22,10 @@ export default function ServiceForm({
         name: service?.name || "",
         description: service?.description || "",
         price: service?.price || "",
+
+        // ✅ 追加：価格テキスト（任意）
+        price_text: service?.price_text || "",
+
         duration_minutes: service?.duration_minutes || "",
         sort_order: service?.sort_order || 0,
         is_active: !!service?.is_active,
@@ -272,6 +276,25 @@ export default function ServiceForm({
                         {errors?.price && (
                             <div className="service-form-error">
                                 {errors.price}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* ✅ 追加：価格テキスト（任意） */}
+                    <div className="service-form-field">
+                        <label className="service-form-label">価格テキスト（任意）</label>
+                        <input
+                            type="text"
+                            name="price_text"
+                            value={data.price_text}
+                            onChange={handleChange}
+                            className="service-form-input"
+                            placeholder="例：10,000円 / 要相談 / キャンペーン中 など"
+                            maxLength={255}
+                        />
+                        {errors?.price_text && (
+                            <div className="service-form-error">
+                                {errors.price_text}
                             </div>
                         )}
                     </div>

@@ -415,6 +415,7 @@ export default function ReservationEdit() {
                             {availableTimes.length > 0 ? (
                                 <div className="admin-reservation-edit-time-grid">
                                     {availableTimes.map((time) => {
+                                        // ✅ ここで “選択中” を判定してクラスを付与（色を保持）
                                         const normalized = normalizeHHmm(
                                             formData.start_time
                                         );

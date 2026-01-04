@@ -2,6 +2,7 @@
 /* =====================================================
    Admin Reservation List
    ※ base/theme.css / base/global.css のトークンを使用
+   ※ PC / Tablet / Mobile レスポンシブ対応（指定ブレークポイント）
 ===================================================== */
 
 /* ページ全体 */
@@ -11,11 +12,11 @@
     padding: 1.5rem 1rem 2.5rem;
 }
 
-/* 読み込み中 */
+/* 読み込み中（ダークテーマでも見える色に） */
 .admin-reservation-loading {
     text-align: center;
     padding: 2rem 1rem;
-    color: rgba(0, 0, 0, 0.6);
+    color: var(--text-muted, rgba(234, 241, 255, 0.72));
     font-size: 0.95rem;
 }
 
@@ -94,8 +95,9 @@
     background-color: var(--color-bg-light);
 }
 
+/* hover（ダークでも見えるように少しだけアクセント） */
 .admin-reservation-row:hover {
-    background-color: rgba(0, 0, 0, 0.02);
+    background-color: rgba(0, 194, 255, 0.06);
 }
 
 /* セルの調整 */
@@ -145,14 +147,15 @@
         color 0.15s ease;
 }
 
-/* 編集ボタン */
+/* 編集ボタン（hoverでも青系を固定：緑にしない） */
 .admin-reservation-button--edit {
     background-color: var(--color-main);
     color: #ffffff;
 }
 
 .admin-reservation-button--edit:hover {
-    background-color: #385a47;
+    /* 背景色は固定のまま、影と浮きだけで反応 */
+    background-color: var(--color-main);
     box-shadow: var(--shadow-soft);
     transform: translateY(-1px);
 }
@@ -170,11 +173,15 @@
 }
 
 /* ============================================
-   レスポンシブ
+   レスポンシブ（指定ブレークポイント）
+   - スマホ（〜640px）
+   - タブレット（641px〜1024px）
+   - PC（1025px〜）
+   - iPhone SE（〜375px）
 ============================================ */
 
-/* ■ PC（1024px 以上） */
-@media (min-width: 1024px) {
+/* ■ PC（1025px〜） */
+@media (min-width: 1025px) {
     .admin-reservation-page {
         padding: 2rem 1rem 3rem;
     }
@@ -184,8 +191,8 @@
     }
 }
 
-/* ■ タブレット（768px ～ 1023px） */
-@media (max-width: 1023px) and (min-width: 768px) {
+/* ■ タブレット（641px〜1024px） */
+@media (min-width: 641px) and (max-width: 1024px) {
     .admin-reservation-page {
         padding: 1.5rem 1rem 2.5rem;
     }
@@ -205,8 +212,8 @@
     }
 }
 
-/* ■ スマホ共通（～ 767px） */
-@media (max-width: 767px) {
+/* ■ スマホ（〜640px） */
+@media (max-width: 640px) {
     .admin-reservation-page {
         padding: 1.25rem 0.75rem 2rem;
     }
@@ -246,7 +253,7 @@
 }
 
 /* ■ iPhone SE 想定（幅 375px 前後） */
-@media (max-width: 400px) {
+@media (max-width: 375px) {
     .admin-reservation-page {
         padding: 1rem 0.5rem 1.75rem;
     }

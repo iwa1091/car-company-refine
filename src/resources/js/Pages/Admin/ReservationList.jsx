@@ -13,6 +13,59 @@ const dateFormatterJST = new Intl.DateTimeFormat("ja-JP", {
 });
 
 /**
+ * ✅ status を日本語表示へ（英語→日本語）
+ * - 既に日本語ならそのまま
+ * - 未知の値は原文を返す（壊さない）
+ */
+function formatStatusToJapanese(status) {
+    if (status == null) return "予約中";
+
+    const raw = String(status).trim();
+    if (!raw) return "予約中";
+
+    // 既に日本語が含まれている場合はそのまま
+    if (/[ぁ-んァ-ン一-龥]/.test(raw)) return raw;
+
+    const key = raw
+        .toLowerCase()
+        .replace(/\s+/g, "")
+        .replace(/-/g, "_");
+
+    const map = {
+        pending: "予約中",
+        reserved: "予約中",
+        booking: "予約中",
+        booked: "予約中",
+
+        confirmed: "確定",
+        approved: "確定",
+
+        completed: "完了",
+        done: "完了",
+
+        canceled: "キャンセル",
+        cancelled: "キャンセル",
+        cancel: "キャンセル",
+
+        no_show: "無断キャンセル",
+        noshow: "無断キャンセル",
+
+        in_progress: "対応中",
+        processing: "対応中",
+
+        rejected: "却下",
+
+        paid: "支払い済み",
+        unpaid: "未払い",
+        refunded: "返金済み",
+
+        expired: "期限切れ",
+    };
+
+    return map[key] ?? raw;
+}
+
+/**
  * ⏰ 時刻表示を「HH:mm」に揃える（管理画面は “表示の安定” を優先）
  *
  * 想定入力（API次第で揺れる）
@@ -267,7 +320,7 @@ export default function ReservationList() {
                                     </td>
                                     <td className="admin-reservation-cell">
                                         <span className="admin-reservation-status">
-                                            {r.status || "予約中"}
+                                            {formatStatusToJapanese(r.status)}
                                         </span>
                                     </td>
                                     <td className="admin-reservation-actions">
