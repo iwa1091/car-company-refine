@@ -1,0 +1,742 @@
+/* /resources/css/pages/admin/timetable.css */
+/* =====================================================
+   Admin Timetable
+   - 既存 admin 画面（reservation-list.css / service-*.css）と同じトークンで統一
+   - 15分刻み（Timetable.jsx の SLOT_WIDTH_PX と合わせる想定）
+===================================================== */
+
+/* =========================
+   Page wrapper / Topbar
+========================= */
+.admin-timetable-page {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 1.5rem 1rem 2.5rem;
+}
+
+.admin-timetable-topbar {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 0.75rem;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.admin-timetable-back {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.admin-timetable-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.85rem;
+    border-radius: 9999px;
+    border: 1px solid var(--border-color);
+    background-color: var(--color-bg-soft);
+    color: var(--salon-brown);
+    text-decoration: none;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+.admin-timetable-back-link:hover {
+    background-color: var(--color-bg-light);
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-1px);
+}
+
+.admin-timetable-nav {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    justify-content: center;
+}
+
+.admin-timetable-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* =========================
+   Buttons
+========================= */
+.admin-timetable-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.4rem 0.95rem;
+    font-size: 0.85rem;
+    border-radius: 9999px;
+    border: 1px solid var(--border-color);
+    background: var(--color-bg-soft);
+    color: var(--salon-brown);
+    cursor: pointer;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.admin-timetable-btn:hover {
+    background-color: var(--color-bg-light);
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-1px);
+}
+
+.admin-timetable-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.admin-timetable-btn--primary {
+    background: var(--color-main);
+    border-color: var(--color-main);
+    color: #ffffff;
+}
+
+.admin-timetable-btn--primary:hover {
+    background: var(--color-main);
+}
+
+.admin-timetable-btn--danger {
+    background: #b43d3d;
+    border-color: #b43d3d;
+    color: #ffffff;
+}
+
+.admin-timetable-btn--danger:hover {
+    background: #912f2f;
+    border-color: #912f2f;
+}
+
+/* =========================
+   Date chip
+========================= */
+.admin-timetable-date {
+    text-align: center;
+    padding: 0.5rem 1rem;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-base);
+    box-shadow: var(--shadow-soft);
+    min-width: 220px;
+}
+
+.admin-timetable-date__label {
+    font-size: 0.75rem;
+    color: var(--text-muted, rgba(234, 241, 255, 0.72));
+    margin-bottom: 0.1rem;
+}
+
+.admin-timetable-date__value {
+    font-family: var(--font-heading);
+    font-size: 1.05rem;
+    color: var(--salon-brown);
+    font-weight: 700;
+}
+
+.admin-timetable-date__sub {
+    margin-top: 0.15rem;
+    font-size: 0.85rem;
+    color: var(--salon-brown);
+}
+
+.admin-timetable-closed {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.1rem 0.55rem;
+    border-radius: 9999px;
+    background: rgba(180, 61, 61, 0.12);
+    color: #b43d3d;
+    border: 1px solid rgba(180, 61, 61, 0.28);
+}
+
+.admin-timetable-open {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.1rem 0.55rem;
+    border-radius: 9999px;
+    background: rgba(0, 194, 255, 0.08);
+    color: var(--salon-brown);
+    border: 1px solid rgba(0, 194, 255, 0.18);
+}
+
+/* =========================
+   Loading / Error
+========================= */
+.admin-timetable-loading,
+.admin-timetable-error {
+    text-align: center;
+    padding: 1.5rem 1rem;
+    border-radius: var(--radius-base);
+    border: 1px solid var(--border-color);
+    background: var(--card-bg);
+    box-shadow: var(--shadow-soft);
+}
+
+.admin-timetable-loading {
+    color: var(--text-muted, rgba(234, 241, 255, 0.72));
+}
+
+.admin-timetable-error {
+    color: #b43d3d;
+}
+
+/* =========================
+   Card / Hint
+========================= */
+.admin-timetable-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-base);
+    box-shadow: var(--shadow-soft);
+    overflow: hidden;
+}
+
+.admin-timetable-hint {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--color-bg-soft);
+}
+
+.admin-timetable-hint__badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.1rem 0.55rem;
+    border-radius: 9999px;
+    background: rgba(0, 194, 255, 0.1);
+    border: 1px solid rgba(0, 194, 255, 0.18);
+    color: var(--salon-brown);
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+.admin-timetable-hint__text {
+    color: var(--salon-brown);
+    font-size: 0.9rem;
+}
+
+.admin-timetable-closed-panel {
+    padding: 1.25rem 1rem;
+    text-align: center;
+    color: var(--salon-brown);
+    background: var(--color-bg-light);
+}
+
+/* =========================
+   Timetable scroll / layout
+========================= */
+.timetable-scroll {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 0.25rem;
+}
+
+.timetable-header {
+    display: flex;
+    align-items: stretch;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--color-bg-soft);
+}
+
+.timetable-header__lane {
+    flex: 0 0 auto;
+    border-right: 1px solid var(--border-color);
+    background: var(--color-bg-soft);
+}
+
+.timetable-header__timeline {
+    position: relative;
+    flex: 0 0 auto;
+    height: 44px;
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.04));
+}
+
+/* 1時間ラベル */
+.timetable-hour-label {
+    position: absolute;
+    top: 10px;
+    transform: translateX(-50%);
+    font-size: 0.78rem;
+    color: var(--salon-brown);
+    font-weight: 600;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+/* =========================
+   Rows / Lanes
+========================= */
+.timetable-body {
+    display: flex;
+    flex-direction: column;
+}
+
+.timetable-row {
+    display: flex;
+    min-height: 142px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.timetable-row:last-child {
+    border-bottom: none;
+}
+
+.timetable-lane {
+    flex: 0 0 auto;
+    padding: 1rem 0.85rem;
+    border-right: 1px solid var(--border-color);
+    background: var(--color-bg-soft);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.2rem;
+}
+
+.timetable-lane__title {
+    color: var(--salon-brown);
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+.timetable-lane__sub {
+    color: var(--text-muted, rgba(234, 241, 255, 0.72));
+    font-size: 0.78rem;
+}
+
+.timetable-track {
+    position: relative;
+    flex: 0 0 auto;
+    background:
+        /* 15分グリッド */
+        repeating-linear-gradient(to right,
+            rgba(0, 0, 0, 0.06) 0px,
+            rgba(0, 0, 0, 0.06) 1px,
+            transparent 1px,
+            transparent var(--slot-width, 44px)),
+        /* 1時間ごと強調（= 15分*4） */
+        repeating-linear-gradient(to right,
+            rgba(0, 0, 0, 0.10) 0px,
+            rgba(0, 0, 0, 0.10) 2px,
+            transparent 2px,
+            transparent calc(var(--slot-width, 44px) * 4));
+}
+
+/* =========================
+   Blocks (Reservation / Admin)
+========================= */
+.timetable-block {
+    position: absolute;
+    top: 16px;
+    height: 108px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-soft);
+    background: #ffffff;
+    color: var(--salon-brown);
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.1s ease, box-shadow 0.15s ease;
+}
+
+.timetable-block:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-soft);
+}
+
+/* 予約ブロック */
+.timetable-block--reservation {
+    background: rgba(0, 194, 255, 0.10);
+    border-color: rgba(0, 194, 255, 0.25);
+}
+
+/* 管理者ブロック */
+.timetable-block--admin {
+    background: rgba(47, 79, 62, 0.10);
+    border-color: rgba(47, 79, 62, 0.25);
+}
+
+.timetable-block__time {
+    padding: 0.35rem 0.6rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    background: rgba(255, 255, 255, 0.55);
+    white-space: nowrap;
+}
+
+.timetable-block__body {
+    padding: 0.35rem 0.6rem 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.timetable-block__line {
+    font-size: 0.82rem;
+    line-height: 1.1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 予約の削除ボタン（右上） */
+.timetable-block__delete {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 22px;
+    height: 22px;
+    border-radius: 9999px;
+    border: 1px solid rgba(180, 61, 61, 0.35);
+    background: rgba(180, 61, 61, 0.10);
+    color: #b43d3d;
+    cursor: pointer;
+    font-weight: 800;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.timetable-block__delete:hover {
+    background: rgba(180, 61, 61, 0.16);
+    transform: translateY(-1px);
+}
+
+/* =========================
+   Modal
+========================= */
+.timetable-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    padding: 1rem;
+}
+
+.timetable-modal {
+    width: min(860px, 100%);
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    background: var(--card-bg);
+    box-shadow: var(--shadow-soft);
+    overflow: hidden;
+}
+
+.timetable-modal__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--color-bg-soft);
+}
+
+.timetable-modal__title {
+    font-family: var(--font-heading);
+    color: var(--salon-brown);
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+
+.timetable-modal__close {
+    width: 34px;
+    height: 34px;
+    border-radius: 9999px;
+    border: 1px solid var(--border-color);
+    background: var(--color-bg-light);
+    cursor: pointer;
+    color: var(--salon-brown);
+    font-size: 1.2rem;
+    line-height: 1;
+}
+
+.timetable-modal__close:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.timetable-modal__body {
+    padding: 1rem;
+}
+
+.timetable-modal__error {
+    margin-bottom: 0.75rem;
+    padding: 0.65rem 0.8rem;
+    border-radius: 12px;
+    border: 1px solid rgba(180, 61, 61, 0.35);
+    background: rgba(180, 61, 61, 0.10);
+    color: #b43d3d;
+    font-size: 0.9rem;
+    white-space: pre-wrap;
+}
+
+.timetable-modal__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1rem;
+    border-top: 1px solid var(--border-color);
+    background: var(--color-bg-soft);
+}
+
+.timetable-modal__footer-right {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+/* =========================
+   Form
+========================= */
+.timetable-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem 0.9rem;
+}
+
+.timetable-form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-width: 0;
+}
+
+.timetable-form-field--full {
+    grid-column: 1 / -1;
+}
+
+.timetable-form-label {
+    color: var(--salon-brown);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.timetable-form-input,
+.timetable-form-textarea {
+    width: 100%;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    background: #ffffff;
+    color: var(--salon-brown);
+    padding: 0.55rem 0.7rem;
+    font-size: 0.92rem;
+    outline: none;
+    transition: box-shadow 0.15s ease, border-color 0.15s ease;
+    box-sizing: border-box;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.timetable-form-textarea {
+    resize: vertical;
+    min-height: 92px;
+}
+
+.timetable-form-input:focus,
+.timetable-form-textarea:focus {
+    border-color: rgba(0, 194, 255, 0.45);
+    box-shadow: 0 0 0 3px rgba(0, 194, 255, 0.12);
+}
+
+.timetable-form-input:disabled,
+.timetable-form-textarea:disabled {
+    opacity: 0.7;
+    background: var(--color-bg-light);
+}
+
+/* =====================================================
+   Modal readability tweaks (override)
+   既存を壊さず、モーダルだけ視認性を上げる
+   ※ timetable.css の一番下に追記
+===================================================== */
+
+/* 背景をしっかり暗くして、モーダルに集中できるように */
+.timetable-modal-overlay {
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+}
+
+/* モーダル本体を “ガラス寄り” にして、他の管理画面と馴染ませる */
+.timetable-modal {
+    background: linear-gradient(180deg,
+            var(--glass-bg-strong, rgba(255, 255, 255, 0.55)),
+            var(--glass-bg, rgba(255, 255, 255, 0.06)));
+    backdrop-filter: blur(var(--glass-blur, 12px));
+    -webkit-backdrop-filter: blur(var(--glass-blur, 12px));
+}
+
+/* ヘッダーの背景と文字色を強める */
+.timetable-modal__header {
+    background: rgba(10, 14, 26, 0.35);
+}
+
+.timetable-modal__title {
+    color: var(--text-default, rgba(255, 255, 255, 0.92));
+}
+
+/* 閉じるボタンも暗背景に合わせる */
+.timetable-modal__close {
+    background: rgba(10, 14, 26, 0.8);
+    color: var(--text-default, rgba(255, 255, 255, 0.35));
+    border-color: var(--border-color);
+}
+
+.timetable-modal__close:hover:not(:disabled) {
+    background: rgba(10, 14, 26, 0.45);
+}
+
+/* 本文が長いときに画面外へはみ出さない（“見にくい”の原因になりがち） */
+.timetable-modal__body {
+    max-height: calc(100vh - 220px);
+    overflow: auto;
+}
+
+/* ラベルを明るくして読みやすく */
+.timetable-form-label {
+    color: rgba(255, 255, 255, 0.88);
+}
+
+/* 入力欄の白ベタをやめて、暗め＋文字色を白寄りに（視認性UP＆馴染む） */
+.timetable-form-input,
+.timetable-form-textarea {
+    background: rgba(10, 14, 26, 0.35);
+    color: var(--text-default, rgba(255, 255, 255, 0.92));
+    border-color: var(--border-color);
+}
+
+/* select の矢印や UI が暗背景で崩れるのを防ぐ（ブラウザ依存の見え方を安定） */
+.timetable-form-input {
+    color-scheme: dark;
+}
+
+.timetable-form-input::placeholder,
+.timetable-form-textarea::placeholder {
+    color: rgba(234, 241, 255, 0.8);
+}
+
+/* フォーカス時の視認性（入力中の場所が分かる） */
+.timetable-form-input:focus,
+.timetable-form-textarea:focus {
+    border-color: rgba(0, 194, 255, 0.55);
+    box-shadow: 0 0 0 4px rgba(0, 194, 255, 0.16);
+}
+
+/* フッターもヘッダーと揃える */
+.timetable-modal__footer {
+    background: rgba(10, 14, 26, 0.35);
+}
+
+/* スマホ時：余白と高さを少し詰めて見切れにくく */
+@media (max-width: 640px) {
+    .timetable-modal {
+        border-radius: 14px;
+    }
+
+    .timetable-modal__body {
+        padding: 0.85rem;
+        max-height: calc(100vh - 200px);
+    }
+}
+
+/* =========================
+   Responsive
+========================= */
+/* PC */
+@media (min-width: 1025px) {
+    .admin-timetable-page {
+        padding: 2rem 1rem 3rem;
+    }
+}
+
+/* Tablet */
+@media (min-width: 641px) and (max-width: 1024px) {
+    .admin-timetable-topbar {
+        grid-template-columns: 1fr;
+        justify-items: stretch;
+    }
+
+    .admin-timetable-nav {
+        justify-content: space-between;
+    }
+
+    .admin-timetable-actions {
+        justify-content: flex-start;
+    }
+
+    .timetable-form-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+    .admin-timetable-page {
+        padding: 1.25rem 0.75rem 2rem;
+    }
+
+    .admin-timetable-topbar {
+        grid-template-columns: 1fr;
+        gap: 0.6rem;
+    }
+
+    .admin-timetable-date {
+        min-width: unset;
+    }
+
+    .admin-timetable-nav {
+        justify-content: space-between;
+    }
+
+    .admin-timetable-actions {
+        justify-content: flex-start;
+    }
+
+    .timetable-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .timetable-block {
+        height: 66px;
+        top: 12px;
+    }
+
+    .timetable-block__line {
+        font-size: 0.8rem;
+    }
+}
+
+/* iPhone SE */
+@media (max-width: 375px) {
+    .admin-timetable-page {
+        padding: 1rem 0.5rem 1.75rem;
+    }
+
+    .admin-timetable-btn,
+    .admin-timetable-back-link {
+        font-size: 0.82rem;
+        padding: 0.38rem 0.8rem;
+    }
+
+    .admin-timetable-date__value {
+        font-size: 1rem;
+    }
+}

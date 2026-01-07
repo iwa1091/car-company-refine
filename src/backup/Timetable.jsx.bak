@@ -1,0 +1,871 @@
+// /resources/js/Pages/Admin/Timetable.jsx
+import { useEffect, useMemo, useState } from "react";
+import { Link, router, usePage } from "@inertiajs/react";
+import { route } from "ziggy-js";
+
+// モジュール化した CSS をインポート
+import "../../../css/pages/admin/timetable.css";
+
+/**
+ * 固定レーン（予約は常に枠1）
+ */
+const LANES = [
+    { id: 1, label: "枠1" },
+    { id: 2, label: "枠2" },
+    { id: 3, label: "調整枠" },
+];
+
+const SLOT_MINUTES = 15;
+const SLOT_WIDTH_PX = 44; // 横幅（15分1枠の幅）。CSSと合わせやすいよう固定
+const LANE_LABEL_WIDTH_PX = 120;
+
+function pad2(n) {
+    return String(n).padStart(2, "0");
+}
+
+function toYmd(d) {
+    const y = d.getFullYear();
+    const m = pad2(d.getMonth() + 1);
+    const day = pad2(d.getDate());
+    return `${y}-${m}-${day}`;
+}
+
+function fromYmd(ymd) {
+    // "YYYY-MM-DD" → Date（ローカル）
+    const [y, m, d] = String(ymd).split("-").map((v) => parseInt(v, 10));
+    return new Date(y, (m || 1) - 1, d || 1);
+}
+
+function addDays(ymd, delta) {
+    const base = fromYmd(ymd);
+    base.setDate(base.getDate() + delta);
+    return toYmd(base);
+}
+
+function extractHHmm(value) {
+    if (!value) return null;
+    const s = String(value).trim();
+    const m = s.match(/(\d{2}:\d{2})/);
+    return m ? m[1] : null;
+}
+
+function hhmmToMinutes(hhmm) {
+    const t = extractHHmm(hhmm);
+    if (!t) return null;
+    const [hh, mm] = t.split(":").map((v) => parseInt(v, 10));
+    if (Number.isNaN(hh) || Number.isNaN(mm)) return null;
+    return hh * 60 + mm;
+}
+
+function minutesToHHmm(min) {
+    const h = Math.floor(min / 60);
+    const m = min % 60;
+    return `${pad2(h)}:${pad2(m)}`;
+}
+
+function clamp(n, min, max) {
+    return Math.max(min, Math.min(max, n));
+}
+
+function diffMinutes(startHHmm, endHHmm) {
+    const s = hhmmToMinutes(startHHmm);
+    const e = hhmmToMinutes(endHHmm);
+    if (s == null || e == null) return null;
+    return e - s;
+}
+
+function buildTimeOptions(openHHmm, closeHHmm) {
+    const openMin = hhmmToMinutes(openHHmm);
+    const closeMin = hhmmToMinutes(closeHHmm);
+    if (openMin == null || closeMin == null) return [];
+
+    const options = [];
+    for (let t = openMin; t <= closeMin - SLOT_MINUTES; t += SLOT_MINUTES) {
+        options.push(minutesToHHmm(t));
+    }
+    return options;
+}
+
+function buildDurationOptions(maxMinutes = 600) {
+    const opts = [];
+    for (let m = SLOT_MINUTES; m <= maxMinutes; m += SLOT_MINUTES) {
+        opts.push(m);
+    }
+    return opts;
+}
+
+function buildDisplayLines(item) {
+    const name = item?.name ? String(item.name) : "";
+    const maker = item?.maker ? String(item.maker) : "";
+    const carModel = item?.car_model ? String(item.car_model) : "";
+    const course = item?.course ? String(item.course) : "";
+    const serviceName =
+        item?.service_name ? String(item.service_name) : item?.menu ? String(item.menu) : "";
+
+    const car = maker || carModel ? `${maker}${maker && carModel ? " " : ""}${carModel}` : "";
+    const lines = [];
+    if (name) lines.push(name);
+    if (car) lines.push(car);
+    if (course) lines.push(course);
+    if (serviceName) lines.push(serviceName);
+
+    return lines;
+}
+
+/**
+ * Timetable
+ * - /api/admin/timetable?date=YYYY-MM-DD を叩いて、営業時間 + 予約 + 管理者ブロックを取得して表示します。
+ * - 予約は lane=1 固定、管理者ブロックは lane=2/3 を想定。
+ */
+export default function Timetable() {
+    const { date: initialDate } = usePage().props;
+
+    const [date, setDate] = useState(initialDate || toYmd(new Date()));
+    // props の date が変わったら state を同期する（Inertia遷移でstateが残る対策）
+    useEffect(() => {
+        const next = initialDate ? String(initialDate).slice(0, 10) : "";
+        if (next && next !== date) {
+            setDate(next);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [initialDate]);
+
+    const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState("");
+
+    const [businessHour, setBusinessHour] = useState({
+        is_closed: false,
+        open_time: "09:00",
+        close_time: "19:30",
+    });
+
+    const [reservations, setReservations] = useState([]);
+    const [blocks, setBlocks] = useState([]);
+
+    // ブロック作成/編集用モーダル
+    const [modalOpen, setModalOpen] = useState(false);
+    const [modalMode, setModalMode] = useState("create"); // "create" | "edit"
+    const [editingBlockId, setEditingBlockId] = useState(null);
+    const [modalError, setModalError] = useState("");
+    const [saving, setSaving] = useState(false);
+
+    const [form, setForm] = useState({
+        lane: 2,
+        start_time: "09:00",
+        duration_minutes: 60,
+        name: "",
+        maker: "",
+        car_model: "",
+        course: "",
+        menu: "",
+        notes: "",
+    });
+
+    const openHHmm = extractHHmm(businessHour?.open_time) || "09:00";
+    const closeHHmm = extractHHmm(businessHour?.close_time) || "19:30";
+    const isClosed = !!businessHour?.is_closed;
+
+    const openMin = hhmmToMinutes(openHHmm);
+    const closeMin = hhmmToMinutes(closeHHmm);
+
+    const slotCount = useMemo(() => {
+        if (openMin == null || closeMin == null) return 0;
+        const diff = closeMin - openMin;
+        if (diff <= 0) return 0;
+        return Math.ceil(diff / SLOT_MINUTES);
+    }, [openMin, closeMin]);
+
+    const timelineWidthPx = useMemo(() => slotCount * SLOT_WIDTH_PX, [slotCount]);
+
+    const timeLabelHours = useMemo(() => {
+        // 1時間ごとのラベル（openからcloseまで）
+        if (openMin == null || closeMin == null) return [];
+        const labels = [];
+        const startHour = Math.ceil(openMin / 60) * 60; // 次の "ちょうどの時刻"
+        for (let t = startHour; t <= closeMin; t += 60) {
+            labels.push(t);
+        }
+        // open が 09:00 などちょうどなら startHour=09:00 でOK
+        if (openMin % 60 === 0) {
+            // すでに含まれてる可能性があるので重複排除
+            const set = new Set(labels);
+            set.add(openMin);
+            return Array.from(set).sort((a, b) => a - b);
+        }
+        return labels;
+    }, [openMin, closeMin]);
+
+    const timeOptions = useMemo(() => {
+        if (isClosed) return [];
+        return buildTimeOptions(openHHmm, closeHHmm);
+    }, [openHHmm, closeHHmm, isClosed]);
+
+    const durationOptions = useMemo(() => buildDurationOptions(600), []);
+
+    const fetchData = async (ymd, signal) => {
+        setLoading(true);
+        setLoadError("");
+
+        try {
+            const res = await fetch(`/api/admin/timetable?date=${encodeURIComponent(ymd)}`, {
+                method: "GET",
+                signal,
+            });
+
+            if (!res.ok) {
+                const text = await res.text().catch(() => "");
+                throw new Error(`timetable API error: ${res.status} ${text}`);
+            }
+
+            const data = await res.json();
+
+            // business_hour の形を吸収
+            const bh = data?.business_hour || data?.businessHour || {};
+            const nextBh = {
+                is_closed: !!bh.is_closed,
+                open_time: extractHHmm(bh.open_time) || "09:00",
+                close_time: extractHHmm(bh.close_time) || "19:30",
+            };
+
+            const nextReservations = Array.isArray(data?.reservations)
+                ? data.reservations.map((r) => ({
+                    type: "reservation",
+                    ...r,
+                    lane: 1, // 念のため固定
+                    start_time: extractHHmm(r.start_time),
+                    end_time: extractHHmm(r.end_time),
+                }))
+                : [];
+
+            const nextBlocks = Array.isArray(data?.blocks)
+                ? data.blocks.map((b) => ({
+                    type: "block",
+                    ...b,
+                    lane: Number(b.lane) || 2,
+                    start_time: extractHHmm(b.start_time),
+                    end_time: extractHHmm(b.end_time),
+                }))
+                : [];
+
+            setBusinessHour(nextBh);
+            setReservations(nextReservations);
+            setBlocks(nextBlocks);
+        } catch (e) {
+            if (e?.name === "AbortError") return;
+            setLoadError("データの取得に失敗しました。API のルート/実装を確認してください。");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        const ac = new AbortController();
+        fetchData(date, ac.signal);
+        return () => ac.abort();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [date]);
+
+    const goDate = (ymd) => {
+        setDate(ymd);
+        // URLの date も更新（戻る/共有対応）
+        router.get(route("admin.timetable", { date: ymd }), {}, { preserveState: true, replace: true });
+    };
+
+    const openCreateModal = () => {
+        if (isClosed) return;
+
+        setModalMode("create");
+        setEditingBlockId(null);
+        setModalError("");
+
+        setForm((prev) => ({
+            lane: 2,
+            start_time: timeOptions[0] || openHHmm,
+            duration_minutes: 60,
+            name: "",
+            maker: "",
+            car_model: "",
+            course: "",
+            menu: "",
+            notes: "",
+            ...prev,
+        }));
+
+        setModalOpen(true);
+    };
+
+    const openEditModal = (block) => {
+        setModalMode("edit");
+        setEditingBlockId(block.id);
+        setModalError("");
+
+        const dur = diffMinutes(block.start_time, block.end_time);
+        setForm({
+            lane: Number(block.lane) || 2,
+            start_time: extractHHmm(block.start_time) || openHHmm,
+            duration_minutes: dur && dur > 0 ? dur : 60,
+            name: block.name || "",
+            maker: block.maker || "",
+            car_model: block.car_model || "",
+            course: block.course || "",
+            menu: block.menu || "",
+            notes: block.notes || "",
+        });
+
+        setModalOpen(true);
+    };
+
+    const closeModal = () => {
+        if (saving) return;
+        setModalOpen(false);
+        setModalError("");
+    };
+
+    const saveBlock = async () => {
+        if (saving) return;
+
+        setSaving(true);
+        setModalError("");
+
+        try {
+            // 15分刻みチェック
+            const dur = Number(form.duration_minutes) || 0;
+            if (dur <= 0 || dur % SLOT_MINUTES !== 0) {
+                setModalError("所要時間は15分刻みで指定してください。");
+                return;
+            }
+
+            const payload = {
+                date,
+                lane: Number(form.lane),
+                start_time: form.start_time,
+                duration_minutes: dur,
+                name: form.name || null,
+                maker: form.maker || null,
+                car_model: form.car_model || null,
+                course: form.course || null,
+                menu: form.menu || null,
+                notes: form.notes || null,
+            };
+
+            const isEdit = modalMode === "edit" && editingBlockId;
+
+            const url = isEdit ? `/api/admin/blocks/${editingBlockId}` : `/api/admin/blocks`;
+            const method = isEdit ? "PUT" : "POST";
+
+            const res = await fetch(url, {
+                method,
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            });
+
+            if (!res.ok) {
+                const json = await res.json().catch(() => null);
+                const msg =
+                    json?.message ||
+                    (json?.errors ? Object.values(json.errors).flat().join("\n") : "") ||
+                    "保存に失敗しました。";
+                setModalError(msg);
+                return;
+            }
+
+            setModalOpen(false);
+            await fetchData(date);
+        } catch {
+            setModalError("保存に失敗しました。");
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const deleteBlock = async () => {
+        if (saving) return;
+        if (!editingBlockId) return;
+        if (!confirm("このブロックを削除しますか？")) return;
+
+        setSaving(true);
+        setModalError("");
+
+        try {
+            const res = await fetch(`/api/admin/blocks/${editingBlockId}`, {
+                method: "DELETE",
+            });
+
+            if (!res.ok) {
+                setModalError("削除に失敗しました。");
+                return;
+            }
+
+            setModalOpen(false);
+            await fetchData(date);
+        } catch {
+            setModalError("削除に失敗しました。");
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const deleteReservation = async (reservationId) => {
+        if (!reservationId) return;
+        if (!confirm("この予約を削除しますか？")) return;
+
+        try {
+            const res = await fetch(`/api/admin/reservations/${reservationId}`, {
+                method: "DELETE",
+            });
+            if (!res.ok) {
+                alert("削除に失敗しました。");
+                return;
+            }
+            await fetchData(date);
+        } catch {
+            alert("削除に失敗しました。");
+        }
+    };
+
+    const blocksByLane = useMemo(() => {
+        const by = new Map();
+        for (const lane of LANES) by.set(lane.id, []);
+
+        const all = [
+            ...reservations.map((r) => ({ ...r, lane: 1, type: "reservation" })),
+            ...blocks.map((b) => ({ ...b, type: "block" })),
+        ];
+
+        for (const item of all) {
+            const laneId = Number(item.lane) || 1;
+            if (!by.has(laneId)) by.set(laneId, []);
+            by.get(laneId).push(item);
+        }
+
+        // start_time で並べる
+        for (const [k, arr] of by.entries()) {
+            arr.sort((a, b) => {
+                const am = hhmmToMinutes(a.start_time) ?? 0;
+                const bm = hhmmToMinutes(b.start_time) ?? 0;
+                return am - bm;
+            });
+            by.set(k, arr);
+        }
+
+        return by;
+    }, [reservations, blocks]);
+
+    const renderItemBlock = (item) => {
+        if (openMin == null || closeMin == null || slotCount <= 0) return null;
+
+        const s = hhmmToMinutes(item.start_time);
+        const e = hhmmToMinutes(item.end_time);
+        if (s == null || e == null) return null;
+
+        const startClamped = clamp(s, openMin, closeMin);
+        const endClamped = clamp(e, openMin, closeMin);
+        const dur = endClamped - startClamped;
+        if (dur <= 0) return null;
+
+        const startIndex = Math.floor((startClamped - openMin) / SLOT_MINUTES);
+        const span = Math.ceil(dur / SLOT_MINUTES);
+
+        const left = startIndex * SLOT_WIDTH_PX;
+        const width = span * SLOT_WIDTH_PX;
+
+        const lines = buildDisplayLines(item);
+        const timeLabel = `${extractHHmm(item.start_time) || ""}〜${extractHHmm(item.end_time) || ""}`;
+
+        const isReservation = item.type === "reservation";
+
+        const onClick = () => {
+            if (isReservation) {
+                // 予約編集へ
+                router.get(route("admin.reservations.edit", item.id));
+                return;
+            }
+            // 管理者ブロック編集
+            openEditModal(item);
+        };
+
+        return (
+            <div
+                key={`${item.type}-${item.id}`}
+                className={
+                    "timetable-block " +
+                    (isReservation ? "timetable-block--reservation" : "timetable-block--admin")
+                }
+                style={{ left: `${left}px`, width: `${width}px` }}
+                role="button"
+                tabIndex={0}
+                onClick={onClick}
+                onKeyDown={(e) => {
+                    if (e.key === "Enter") onClick();
+                }}
+                title={lines.join(" / ")}
+            >
+                <div className="timetable-block__time">{timeLabel}</div>
+                <div className="timetable-block__body">
+                    {lines.length > 0 ? (
+                        lines.map((l, idx) => (
+                            <div key={idx} className="timetable-block__line">
+                                {l}
+                            </div>
+                        ))
+                    ) : (
+                        <div className="timetable-block__line">（内容なし）</div>
+                    )}
+                </div>
+
+                {isReservation ? (
+                    <button
+                        type="button"
+                        className="timetable-block__delete"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            deleteReservation(item.id);
+                        }}
+                        aria-label="予約を削除"
+                        title="予約を削除"
+                    >
+                        ×
+                    </button>
+                ) : null}
+            </div>
+        );
+    };
+
+    return (
+        <div className="admin-timetable-page">
+            <div className="admin-timetable-topbar">
+                <div className="admin-timetable-back">
+                    <Link href={route("admin.reservations.index")} className="admin-timetable-back-link">
+                        予約カレンダーへ戻る
+                    </Link>
+                    <Link href={route("admin.dashboard")} className="admin-timetable-back-link">
+                        ダッシュボード
+                    </Link>
+                </div>
+
+                <div className="admin-timetable-nav">
+                    <button
+                        type="button"
+                        className="admin-timetable-btn"
+                        onClick={() => goDate(addDays(date, -1))}
+                        disabled={loading}
+                    >
+                        ← 前日
+                    </button>
+
+                    <div className="admin-timetable-date">
+                        <div className="admin-timetable-date__label">日付</div>
+                        <div className="admin-timetable-date__value">{date}</div>
+                        <div className="admin-timetable-date__sub">
+                            {isClosed ? (
+                                <span className="admin-timetable-closed">休業日</span>
+                            ) : (
+                                <span className="admin-timetable-open">
+                                    {openHHmm}〜{closeHHmm}
+                                </span>
+                            )}
+                        </div>
+                    </div>
+
+                    <button
+                        type="button"
+                        className="admin-timetable-btn"
+                        onClick={() => goDate(addDays(date, 1))}
+                        disabled={loading}
+                    >
+                        翌日 →
+                    </button>
+                </div>
+
+                <div className="admin-timetable-actions">
+                    <button
+                        type="button"
+                        className="admin-timetable-btn admin-timetable-btn--primary"
+                        onClick={openCreateModal}
+                        disabled={loading || isClosed}
+                        title={isClosed ? "休業日は作成できません" : "管理者ブロックを作成"}
+                    >
+                        ＋ ブロック作成
+                    </button>
+                </div>
+            </div>
+
+            {loading ? (
+                <div className="admin-timetable-loading">読み込み中...</div>
+            ) : loadError ? (
+                <div className="admin-timetable-error">{loadError}</div>
+            ) : (
+                <div className="admin-timetable-card">
+                    <div className="admin-timetable-hint">
+                        <span className="admin-timetable-hint__badge">15分刻み</span>
+                        <span className="admin-timetable-hint__text">
+                            予約は <b>枠1</b> に自動表示。枠2/調整枠は管理者ブロックで使用します。
+                        </span>
+                    </div>
+
+                    {isClosed ? (
+                        <div className="admin-timetable-closed-panel">
+                            この日は休業日です（タイムテーブルは表示しません）。
+                        </div>
+                    ) : (
+                        <div className="timetable-scroll">
+                            {/* ヘッダー（時間） */}
+                            <div className="timetable-header">
+                                <div
+                                    className="timetable-header__lane"
+                                    style={{ width: `${LANE_LABEL_WIDTH_PX}px` }}
+                                />
+                                <div
+                                    className="timetable-header__timeline"
+                                    style={{
+                                        width: `${timelineWidthPx}px`,
+                                        "--slot-width": `${SLOT_WIDTH_PX}px`,
+                                    }}
+                                >
+                                    {timeLabelHours.map((min) => {
+                                        const offsetSlots = Math.round((min - openMin) / SLOT_MINUTES);
+                                        const leftPx = offsetSlots * SLOT_WIDTH_PX;
+                                        const hhmm = minutesToHHmm(min);
+                                        // 範囲外は出さない
+                                        if (min < openMin || min > closeMin) return null;
+                                        return (
+                                            <div
+                                                key={min}
+                                                className="timetable-hour-label"
+                                                style={{ left: `${leftPx}px` }}
+                                            >
+                                                {hhmm}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            {/* レーン行 */}
+                            <div className="timetable-body">
+                                {LANES.map((lane) => {
+                                    const items = blocksByLane.get(lane.id) || [];
+                                    return (
+                                        <div key={lane.id} className="timetable-row">
+                                            <div
+                                                className="timetable-lane"
+                                                style={{ width: `${LANE_LABEL_WIDTH_PX}px` }}
+                                            >
+                                                <div className="timetable-lane__title">{lane.label}</div>
+                                                <div className="timetable-lane__sub">
+                                                    {lane.id === 1 ? "予約" : "ブロック"}
+                                                </div>
+                                            </div>
+
+                                            <div
+                                                className="timetable-track"
+                                                style={{
+                                                    width: `${timelineWidthPx}px`,
+                                                    "--slot-width": `${SLOT_WIDTH_PX}px`,
+                                                }}
+                                            >
+                                                {/* ブロック */}
+                                                {items.map(renderItemBlock)}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* モーダル */}
+            {modalOpen ? (
+                <div className="timetable-modal-overlay" onMouseDown={closeModal}>
+                    <div
+                        className="timetable-modal"
+                        onMouseDown={(e) => e.stopPropagation()}
+                        role="dialog"
+                        aria-modal="true"
+                    >
+                        <div className="timetable-modal__header">
+                            <div className="timetable-modal__title">
+                                {modalMode === "edit" ? "ブロック編集" : "ブロック作成"}
+                            </div>
+                            <button
+                                type="button"
+                                className="timetable-modal__close"
+                                onClick={closeModal}
+                                disabled={saving}
+                                aria-label="閉じる"
+                            >
+                                ×
+                            </button>
+                        </div>
+
+                        <div className="timetable-modal__body">
+                            {modalError ? <div className="timetable-modal__error">{modalError}</div> : null}
+
+                            <div className="timetable-form-grid">
+                                <label className="timetable-form-field">
+                                    <span className="timetable-form-label">レーン</span>
+                                    <select
+                                        className="timetable-form-input"
+                                        value={form.lane}
+                                        onChange={(e) =>
+                                            setForm((p) => ({ ...p, lane: Number(e.target.value) }))
+                                        }
+                                        disabled={saving}
+                                    >
+                                        {/* 予約は枠1固定なので、ブロックは 2/3 を推奨 */}
+                                        <option value={2}>枠2</option>
+                                        <option value={3}>調整枠</option>
+                                    </select>
+                                </label>
+
+                                <label className="timetable-form-field">
+                                    <span className="timetable-form-label">開始</span>
+                                    <select
+                                        className="timetable-form-input"
+                                        value={form.start_time}
+                                        onChange={(e) =>
+                                            setForm((p) => ({ ...p, start_time: e.target.value }))
+                                        }
+                                        disabled={saving}
+                                    >
+                                        {timeOptions.map((t) => (
+                                            <option key={t} value={t}>
+                                                {t}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </label>
+
+                                <label className="timetable-form-field">
+                                    <span className="timetable-form-label">所要時間</span>
+                                    <select
+                                        className="timetable-form-input"
+                                        value={form.duration_minutes}
+                                        onChange={(e) =>
+                                            setForm((p) => ({
+                                                ...p,
+                                                duration_minutes: Number(e.target.value),
+                                            }))
+                                        }
+                                        disabled={saving}
+                                    >
+                                        {durationOptions.map((m) => (
+                                            <option key={m} value={m}>
+                                                {m}分
+                                            </option>
+                                        ))}
+                                    </select>
+                                </label>
+
+                                <label className="timetable-form-field">
+                                    <span className="timetable-form-label">名前</span>
+                                    <input
+                                        className="timetable-form-input"
+                                        value={form.name}
+                                        onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
+                                        disabled={saving}
+                                        placeholder="例）田中 太郎"
+                                    />
+                                </label>
+
+                                <label className="timetable-form-field">
+                                    <span className="timetable-form-label">メーカー</span>
+                                    <input
+                                        className="timetable-form-input"
+                                        value={form.maker}
+                                        onChange={(e) => setForm((p) => ({ ...p, maker: e.target.value }))}
+                                        disabled={saving}
+                                        placeholder="例）トヨタ"
+                                    />
+                                </label>
+
+                                <label className="timetable-form-field">
+                                    <span className="timetable-form-label">車種</span>
+                                    <input
+                                        className="timetable-form-input"
+                                        value={form.car_model}
+                                        onChange={(e) =>
+                                            setForm((p) => ({ ...p, car_model: e.target.value }))
+                                        }
+                                        disabled={saving}
+                                        placeholder="例）プリウス"
+                                    />
+                                </label>
+
+                                <label className="timetable-form-field">
+                                    <span className="timetable-form-label">コース</span>
+                                    <input
+                                        className="timetable-form-input"
+                                        value={form.course}
+                                        onChange={(e) => setForm((p) => ({ ...p, course: e.target.value }))}
+                                        disabled={saving}
+                                        placeholder="例）スタンダード"
+                                    />
+                                </label>
+
+                                <label className="timetable-form-field">
+                                    <span className="timetable-form-label">メニュー</span>
+                                    <input
+                                        className="timetable-form-input"
+                                        value={form.menu}
+                                        onChange={(e) => setForm((p) => ({ ...p, menu: e.target.value }))}
+                                        disabled={saving}
+                                        placeholder="例）洗車 / 施工 / 打合せ など"
+                                    />
+                                </label>
+
+                                <label className="timetable-form-field timetable-form-field--full">
+                                    <span className="timetable-form-label">備考</span>
+                                    <textarea
+                                        className="timetable-form-textarea"
+                                        value={form.notes}
+                                        onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))}
+                                        disabled={saving}
+                                        rows={3}
+                                        placeholder="必要に応じて"
+                                    />
+                                </label>
+                            </div>
+                        </div>
+
+                        <div className="timetable-modal__footer">
+                            {modalMode === "edit" ? (
+                                <button
+                                    type="button"
+                                    className="admin-timetable-btn admin-timetable-btn--danger"
+                                    onClick={deleteBlock}
+                                    disabled={saving}
+                                >
+                                    削除
+                                </button>
+                            ) : (
+                                <span />
+                            )}
+
+                            <div className="timetable-modal__footer-right">
+                                <button
+                                    type="button"
+                                    className="admin-timetable-btn"
+                                    onClick={closeModal}
+                                    disabled={saving}
+                                >
+                                    キャンセル
+                                </button>
+                                <button
+                                    type="button"
+                                    className="admin-timetable-btn admin-timetable-btn--primary"
+                                    onClick={saveBlock}
+                                    disabled={saving}
+                                >
+                                    {saving ? "保存中..." : "保存"}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            ) : null}
+        </div>
+    );
+}
