@@ -1,0 +1,73 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+
+// Controllers
+use App\Http\Controllers\Admin\BusinessHourController;
+use App\Http\Controllers\Admin\AdminReservationController;
+use App\Http\Controllers\Admin\AdminBlockController;
+use App\Http\Controllers\Admin\ServiceController;
+use App\Http\Controllers\Api\ReservationController as ApiReservationController;
+
+/*
+|--------------------------------------------------------------------------
+| API Routes（JSONのみ）
+|--------------------------------------------------------------------------
+| Inertia ページは web.php で処理します。
+|--------------------------------------------------------------------------
+*/
+
+// ============================================================
+// 🕒 営業時間設定 API（BusinessHourController）
+// ============================================================
+Route::prefix('business-hours')->group(function () {
+    // ReservationList.jsx が /api/business-hours/weekly を叩くため残す
+    Route::get('/weekly', [BusinessHourController::class, 'getWeekly']);
+    Route::put('/weekly', [BusinessHourController::class, 'updateWeekly']);
+
+    // ReservationEdit.jsx が /api/business-hours を叩くため残す
+    Route::get('/', [BusinessHourController::class, 'getHours']);
+    Route::put('/', [BusinessHourController::class, 'updateHours']);
+});
+
+
+// ============================================================
+// 🧑‍💼 管理者向け API（React 管理画面 fetch 用）
+// ============================================================
+Route::prefix('admin')->group(function () {
+
+    // サービス管理 API（React管理画面用に残す）
+    Route::get('services', [ServiceController::class, 'apiIndex']);
+    Route::post('services', [ServiceController::class, 'apiStore']);
+    Route::put('services/{service}', [ServiceController::class, 'apiUpdate']);
+    Route::delete('services/{service}', [ServiceController::class, 'apiDestroy']);
+
+    // 予約一覧/削除 API（ReservationList.jsx が使用）
+    Route::get('reservations', [AdminReservationController::class, 'apiIndex']);
+    Route::delete('reservations/{id}', [AdminReservationController::class, 'apiDestroy']);
+
+    // ✅ タイムテーブル（日別）
+    // Timetable.jsx が /api/admin/timetable?date=YYYY-MM-DD を叩く
+    Route::get('timetable', [AdminReservationController::class, 'apiTimetable']);
+
+    // ✅ 管理者ブロック CRUD
+    // Timetable.jsx が /api/admin/blocks... を叩く
+    Route::post('blocks', [AdminBlockController::class, 'store']);
+    Route::put('blocks/{id}', [AdminBlockController::class, 'update']);
+    Route::delete('blocks/{id}', [AdminBlockController::class, 'destroy']);
+});
+
+
+// ============================================================
+// 🧾 一般ユーザー向け API（予約フォーム用）
+// ============================================================
+Route::get('/reservations/month-schedule', [ApiReservationController::class, 'monthSchedule']);
+
+// サービス一覧（予約フォームが参照している可能性が高いので残す）
+Route::get('/services', [ServiceController::class, 'apiList']);
+
+// 予約作成
+Route::post('/reservations', [ApiReservationController::class, 'store']);
+
+// 予約可能時間のチェック
+Route::get('/reservations/check', [ApiReservationController::class, 'checkAvailability']);
