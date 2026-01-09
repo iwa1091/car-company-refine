@@ -106,4 +106,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // 顧客一覧（Dashboard側にリンクが残っている可能性が高いので安全に残す）
         Route::get('/users', [CustomerController::class, 'index'])->name('users.index');
     });
+
+    // routes/web.php（admin middleware内）2026.01.06追加
+
+    Route::get('/timetable', [AdminReservationController::class, 'timetable'])
+        ->name('timetable');
+
 });

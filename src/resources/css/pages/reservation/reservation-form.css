@@ -301,6 +301,15 @@
     transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
 }
 
+/* 時間ボタン内の「残り1ブース」を折り返さない（オプションボタンには影響しない） */
+.reservation-time-button>div>div:last-child {
+    white-space: nowrap;
+    word-break: keep-all;
+    line-height: 1.1;
+    font-size: 0.72rem;
+    /* 文字がはみ出しにくいように少し小さめ */
+}
+
 .reservation-time-button:hover {
     transform: translateY(-1px);
     border-color: rgba(0, 194, 255, 0.40);
@@ -453,6 +462,9 @@
 
 @media (max-width: 640px) {
     .reservation-time-grid {
-        grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+    .reservation-time-button>div>div:last-child {
+    font-size: 0.68rem;
+            }
     }
 }

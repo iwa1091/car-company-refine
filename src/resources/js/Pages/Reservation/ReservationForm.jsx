@@ -43,6 +43,68 @@ function isPastDay(d) {
 }
 
 /**
+ * "HH:mm" -> minutes
+ */
+function hhmmToMinutes(hhmm) {
+    if (!hhmm || typeof hhmm !== "string") return null;
+    const m = hhmm.match(/^(\d{2}):(\d{2})$/);
+    if (!m) return null;
+    const h = Number(m[1]);
+    const min = Number(m[2]);
+    if (!Number.isFinite(h) || !Number.isFinite(min)) return null;
+    return h * 60 + min;
+}
+
+/**
+ * minutes -> "HH:mm"
+ */
+function minutesToHHmm(total) {
+    const h = Math.floor(total / 60);
+    const m = total % 60;
+    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+}
+
+/**
+ * 営業時間(open〜close)・施術時間(duration)から「開始可能枠」を生成（15分刻み）
+ * 例：open=09:00 close=19:30 duration=60 step=15
+ */
+function generateStartTimes(openHHmm, closeHHmm, durationMinutes, stepMinutes = 15) {
+    const open = hhmmToMinutes(openHHmm);
+    const close = hhmmToMinutes(closeHHmm);
+    const dur = Number(durationMinutes);
+
+    if (open == null || close == null) return [];
+    if (!Number.isFinite(dur) || dur <= 0) return [];
+
+    const lastStart = close - dur;
+    if (lastStart < open) return [];
+
+    const result = [];
+    for (let t = open; t <= lastStart; t += stepMinutes) {
+        result.push(minutesToHHmm(t));
+    }
+    return result;
+}
+
+/**
+ * ✅ 追加：表示用の「時刻リスト」を生成（duration を考慮しない）
+ * open〜close を 15分刻みで並べる（close も含める）
+ */
+function generateDisplayTimes(openHHmm, closeHHmm, stepMinutes = 15) {
+    const open = hhmmToMinutes(openHHmm);
+    const close = hhmmToMinutes(closeHHmm);
+
+    if (open == null || close == null) return [];
+    if (close < open) return [];
+
+    const result = [];
+    for (let t = open; t <= close; t += stepMinutes) {
+        result.push(minutesToHHmm(t));
+    }
+    return result;
+}
+
+/**
  * service から category_id をできるだけ安全に取得
  * - /api/services が {category_id} を返していればOK
  * - 返していなければカテゴリ絞り込みは自動的に無効化されます（壊れません）
@@ -105,7 +167,44 @@ function firstError(errors) {
     return "";
 }
 
+/**
+ * ✅ オプションはDB追加しない前提なので、notes に埋め込む
+ * - 例）【オプション】ガラスコーティング
+ *      （以下、ユーザー備考）
+ */
+function buildNotesWithOption(userNotes, optionValues) {
+    const base = String(userNotes || "").trim();
+
+    const listRaw = Array.isArray(optionValues)
+        ? optionValues
+        : [optionValues];
+
+    const list = listRaw
+        .map((x) => String(x || "").trim())
+        .filter(Boolean);
+
+    const normalized =
+        list.length === 0 ? ["なし"] :
+            list.includes("なし") ? ["なし"] :
+                list;
+
+    const optText = normalized.join("、");
+    const line = `【オプション】${optText}`;
+
+    return base ? `${line}\n${base}` : line;
+}
+
 export default function ReservationForm() {
+    // ✅ 表示時刻の上限（営業時間に関係なく）
+    const DEBUG = useMemo(() => new URLSearchParams(window.location.search).get("debug") === "1", []);
+    const DEBUG_TIME = "18:30";
+
+    const HARD_CLOSE_HHMM = "18:30";
+    // ✅ 追加：メニュー時間に関係なく「開始時刻」は 18:30 までに制限
+    const HARD_LAST_START_HHMM = "18:30";
+    // ✅ 追加：当日は「開始時刻の1時間前」まで予約可（1時間前は予約不可）
+    const MIN_LEAD_MINUTES = 60;
+
     const [date, setDate] = useState(new Date());
     const [selectedTime, setSelectedTime] = useState("");
 
@@ -121,6 +220,40 @@ export default function ReservationForm() {
         notes: "",
     });
 
+    // ✅ オプション（デフォルト：なし）
+    const OPTION_ITEMS = useMemo(
+        () => ["なし", "室内清掃", "内窓拭き", "ガラス油膜除去", "ガラスコーティング"],
+        []
+    );
+    const [selectedOption, setSelectedOption] = useState("なし");
+
+    // ✅ オプション（複数選択）："なし" をデフォルト
+    const [selectedOptions, setSelectedOptions] = useState(["なし"]);
+
+    // ✅ "なし" は排他的（他を選んだら外れる／なしを選んだら他が消える）
+    const toggleOption = (opt) => {
+        setSelectedOptions((prev) => {
+            const current = Array.isArray(prev) ? prev : [];
+            const has = current.includes(opt);
+
+            // 「なし」を押したら「なし」だけにする
+            if (opt === "なし") return ["なし"];
+
+            // 他オプションを押したら「なし」は外す
+            const withoutNone = current.filter((x) => x !== "なし");
+
+            if (has) {
+                // すでに選択済みなら外す
+                const next = withoutNone.filter((x) => x !== opt);
+                // 全部外れたら自動で「なし」に戻す
+                return next.length ? next : ["なし"];
+            }
+
+            // 未選択なら追加
+            return [...withoutNone, opt];
+        });
+    };
+
     const [services, setServices] = useState([]);
 
     const [availabilityLoading, setAvailabilityLoading] = useState(false);
@@ -131,6 +264,9 @@ export default function ReservationForm() {
 
     // ✅ API message（休業/不正/空きなし など）
     const [availabilityMessage, setAvailabilityMessage] = useState("");
+
+    // ✅ API から返ってくる営業時間（open/close）を保持（全枠生成に使う）
+    const [businessHour, setBusinessHour] = useState(null);
 
     const [message, setMessage] = useState("");
 
@@ -145,16 +281,129 @@ export default function ReservationForm() {
     const [selectedCategoryId, setSelectedCategoryId] = useState("");
     const didInitFromQuery = useRef(false);
 
+    // ✅ menu_price から来た場合は「コース/メニューのセレクトを隠す」
+    const [hideCourseMenuSelectors, setHideCourseMenuSelectors] = useState(false);
+
+    // ✅ 成功後に同じ日付・同じメニューでも空き枠を再取得したい（表示のズレ防止）
+    const [availabilityNonce, setAvailabilityNonce] = useState(0);
+
     const selectedYmd = useMemo(() => toYmd(date), [date]);
     const isServiceSelected = !!formData.service_id;
 
-    const displayTimes = useMemo(() => {
+    const selectedService = useMemo(() => {
+        if (!Array.isArray(services) || !formData.service_id) return null;
+        return services.find((s) => String(s.id) === String(formData.service_id)) || null;
+    }, [services, formData.service_id]);
+
+    const serviceDurationMinutes = useMemo(() => {
+        const v = Number(selectedService?.duration_minutes);
+        return Number.isFinite(v) && v > 0 ? v : 0;
+    }, [selectedService]);
+
+    const availableStartTimes = useMemo(() => {
         if (!isServiceSelected) return [];
         if (!Array.isArray(availableSlotsByApi) || availableSlotsByApi.length === 0) return [];
-        return availableSlotsByApi
-            .map((s) => toHHmm(s?.start))
-            .filter(Boolean);
+        return availableSlotsByApi.map((s) => toHHmm(s?.start)).filter(Boolean);
     }, [isServiceSelected, availableSlotsByApi]);
+
+    const availableStartSet = useMemo(() => new Set(availableStartTimes), [availableStartTimes]);
+
+    // ✅ 「全枠（○/×）」を生成して表示する（×枠も表示する）
+    // ✅ メニュー時間に関係なく「開始時刻」は 18:30 までに制限
+    const timeItems = useMemo(() => {
+        if (DEBUG) {
+            const todayYmd = toYmd(new Date());
+            const isToday = selectedYmd === todayYmd;
+
+            const now = new Date();
+            const nowMin = now.getHours() * 60 + now.getMinutes();
+            const leadCutoffMin = nowMin + Number(MIN_LEAD_MINUTES || 0);
+
+            const m = hhmmToMinutes(DEBUG_TIME);
+            console.log("[timeItems debug]", {
+                selectedYmd,
+                todayYmd,
+                isToday,
+                now: now.toString(),
+                nowMin,
+                leadCutoffMin,
+                debugTime: DEBUG_TIME,
+                debugTimeMin: m,
+                inApi: availableStartSet.has(DEBUG_TIME),
+                leadOk: !isToday ? true : (m != null && m > leadCutoffMin),
+                businessHour,
+            });
+        }
+
+        if (!isServiceSelected) return [];
+        if (!serviceDurationMinutes) return [];
+
+        const hardLastStartMin = hhmmToMinutes(HARD_LAST_START_HHMM);
+
+        const applyHardLastStart = (times) => {
+            if (hardLastStartMin == null) return times;
+            return times.filter((t) => {
+                const m = hhmmToMinutes(t);
+                return m != null && m <= hardLastStartMin;
+            });
+        };
+
+        // ✅ 追加：当日「開始時刻の1時間前」は予約不可（表示はするが×扱い）
+        const todayYmd = toYmd(new Date());
+        const isToday = selectedYmd === todayYmd;
+        const now = new Date();
+        const nowMin = now.getHours() * 60 + now.getMinutes();
+        const leadCutoffMin = nowMin + Number(MIN_LEAD_MINUTES || 0);
+
+        const isLeadTimeOk = (t) => {
+            if (!isToday) return true;
+            const m = hhmmToMinutes(t);
+            // 1時間前「ちょうど」は不可（例：17:30時点で18:30は不可）
+            return m != null && m > leadCutoffMin;
+        };
+
+        // APIエラー時は従来どおり（不必要に×を並べて混乱させない）
+        if (availabilityError) {
+            const uniq = Array.from(new Set(applyHardLastStart(availableStartTimes)));
+            return uniq.map((t) => ({
+                time: t,
+                available: availableStartSet.has(t) && isLeadTimeOk(t),
+            }));
+        }
+
+        const openRaw = toHHmm(businessHour?.open_time) || "09:00";
+
+        // ✅ 表示上の「閉店」は一律 18:30（ただし、実営業時間がそれより早い場合は早い方に合わせる）
+        const apiCloseRaw = toHHmm(businessHour?.close_time) || HARD_CLOSE_HHMM;
+        const apiCloseMin = hhmmToMinutes(apiCloseRaw);
+        const hardCloseMin = hhmmToMinutes(HARD_CLOSE_HHMM);
+
+        const cappedClose =
+            apiCloseMin != null && hardCloseMin != null
+                ? minutesToHHmm(Math.min(apiCloseMin, hardCloseMin))
+                : HARD_CLOSE_HHMM;
+
+        // ✅ ここがポイント：duration を使わず「表示枠」を作る（18:00/18:15/18:30 も必ず出る）
+        const allDisplay = generateDisplayTimes(openRaw, cappedClose, 15);
+
+        const uniq = Array.from(new Set(applyHardLastStart(allDisplay)));
+        return uniq.map((t) => ({
+            time: t,
+            // ✅ “選択可” は API の空き + 1時間前ルールで判定（110分なら18時台は自動で×になる）
+            available: availableStartSet.has(t) && isLeadTimeOk(t),
+        }));
+    }, [
+        isServiceSelected,
+        businessHour,
+        serviceDurationMinutes,
+        availableStartTimes,
+        availableStartSet,
+        availabilityError,
+        selectedYmd,
+        MIN_LEAD_MINUTES,
+        HARD_CLOSE_HHMM,
+        HARD_LAST_START_HHMM,
+    ]);
 
     // ✅ 追加：services からカテゴリ一覧を生成（category_id がある場合のみ有効）
     const categories = useMemo(() => {
@@ -234,8 +483,8 @@ export default function ReservationForm() {
         if (!Array.isArray(services) || services.length === 0) return;
 
         const params = new URLSearchParams(window.location.search);
-        const qsServiceId = params.get("service_id");    // menu_price から
-        const qsCategoryId = params.get("category_id");  // menu_price から（推奨）
+        const qsServiceId = params.get("service_id"); // menu_price から
+        const qsCategoryId = params.get("category_id"); // menu_price から（推奨）
 
         let nextServiceId = qsServiceId ? String(qsServiceId) : "";
         let nextCategoryId = qsCategoryId ? String(qsCategoryId) : "";
@@ -246,6 +495,10 @@ export default function ReservationForm() {
 
         if (!picked) {
             nextServiceId = "";
+            setHideCourseMenuSelectors(false);
+        } else {
+            // menu_price から来た場合はセレクトUIを隠す（値は保持して送信）
+            setHideCourseMenuSelectors(!!qsServiceId);
         }
 
         // category_id が無ければ service から補完（service が category_id を持つ前提）
@@ -259,12 +512,22 @@ export default function ReservationForm() {
             setSelectedCategoryId(String(nextCategoryId));
         }
 
-        if (nextServiceId) {
-            setFormData((prev) => ({ ...prev, service_id: String(nextServiceId) }));
+        if (nextServiceId && picked) {
+            const courseName =
+                getCategoryName(picked) ||
+                (nextCategoryId && canFilterByCategory
+                    ? categories.find((c) => String(c.id) === String(nextCategoryId))?.name || ""
+                    : "");
+
+            setFormData((prev) => ({
+                ...prev,
+                service_id: String(nextServiceId),
+                course: courseName,
+            }));
         }
 
         didInitFromQuery.current = true;
-    }, [services, canFilterByCategory]);
+    }, [services, canFilterByCategory, categories]);
 
     // -------------------------
     // ✅ 月内休業日（グレーアウト）取得
@@ -335,6 +598,7 @@ export default function ReservationForm() {
     useEffect(() => {
         if (!isServiceSelected) {
             setAvailableSlotsByApi([]);
+            setBusinessHour(null);
             setSelectedTime("");
             setAvailabilityError(false);
             setAvailabilityMessage("");
@@ -363,6 +627,7 @@ export default function ReservationForm() {
                     const errorData = await res.json().catch(() => ({}));
                     if (!aborted) {
                         setAvailableSlotsByApi([]);
+                        setBusinessHour(null);
                         setAvailabilityError(true);
                         setAvailabilityMessage(
                             typeof errorData?.message === "string" && errorData.message
@@ -378,6 +643,20 @@ export default function ReservationForm() {
 
                 if (!aborted) {
                     setAvailabilityMessage(typeof data?.message === "string" ? data.message : "");
+                }
+
+                // ✅ business_hour を保持（全枠生成に使う）
+                const bh = data?.business_hour || data?.businessHour || null;
+                if (!aborted) {
+                    if (bh) {
+                        setBusinessHour({
+                            open_time: toHHmm(bh.open_time),
+                            close_time: toHHmm(bh.close_time),
+                            is_closed: !!bh.is_closed,
+                        });
+                    } else {
+                        setBusinessHour(null);
+                    }
                 }
 
                 // ✅ 互換：available_slots / availableSlots / slots
@@ -398,6 +677,12 @@ export default function ReservationForm() {
 
                 if (!aborted) {
                     setAvailableSlotsByApi(normalized);
+                    if (DEBUG) {
+                        console.log("[avail raw slots]", slots);
+                        console.log("[avail normalized]", normalized);
+                        console.log("[avail startTimes]", normalized.map(x => x.start));
+                    }
+
 
                     setSelectedTime((current) => {
                         if (!current) return "";
@@ -408,6 +693,7 @@ export default function ReservationForm() {
                 console.error("予約可能時間チェックに失敗:", err);
                 if (!aborted) {
                     setAvailableSlotsByApi([]);
+                    setBusinessHour(null);
                     setAvailabilityError(true);
                     setAvailabilityMessage("空き状況の取得に失敗しました。");
                     setSelectedTime("");
@@ -422,7 +708,37 @@ export default function ReservationForm() {
         return () => {
             aborted = true;
         };
-    }, [selectedYmd, formData.service_id, isServiceSelected]);
+    }, [selectedYmd, formData.service_id, isServiceSelected, availabilityNonce]);
+
+    // ✅ 空き枠更新で、選択中の時間が空きでなくなったら解除（事故防止）
+    useEffect(() => {
+        if (!selectedTime) return;
+
+        const hardLastStartMin = hhmmToMinutes(HARD_LAST_START_HHMM);
+        const selMin = hhmmToMinutes(selectedTime);
+
+        if (hardLastStartMin != null && selMin != null && selMin > hardLastStartMin) {
+            setSelectedTime("");
+            return;
+        }
+
+        // ✅ 追加：当日は「開始時刻の1時間前」まで（1時間前は不可）
+        const todayYmd = toYmd(new Date());
+        if (selectedYmd === todayYmd) {
+            const now = new Date();
+            const nowMin = now.getHours() * 60 + now.getMinutes();
+            const leadCutoffMin = nowMin + Number(MIN_LEAD_MINUTES || 0);
+
+            if (selMin != null && selMin <= leadCutoffMin) {
+                setSelectedTime("");
+                return;
+            }
+        }
+
+        if (!availableStartSet.has(selectedTime)) {
+            setSelectedTime("");
+        }
+    }, [availableStartSet, selectedTime, selectedYmd, MIN_LEAD_MINUTES, HARD_LAST_START_HHMM]);
 
     // -------------------------
     // カレンダー無効化（過去日 + 休業日）
@@ -445,6 +761,13 @@ export default function ReservationForm() {
             return next;
         });
 
+        // ✅ course（表示用ではなく、送信用の文字列）を更新
+        const courseName = value
+            ? categories.find((c) => String(c.id) === String(value))?.name || ""
+            : "";
+
+        setFormData((prev) => ({ ...prev, course: courseName }));
+
         // service がカテゴリ外になったらクリア
         setFormData((prev) => {
             if (!prev.service_id) return prev;
@@ -452,11 +775,12 @@ export default function ReservationForm() {
             const cid = getCategoryId(picked);
             if (!value) return prev; // 「すべて」なら維持
             if (cid && String(cid) === String(value)) return prev;
-            return { ...prev, service_id: "" };
+            return { ...prev, service_id: "", course: "" };
         });
 
         setSelectedTime("");
         setAvailableSlotsByApi([]);
+        setBusinessHour(null);
         setAvailabilityError(false);
         setAvailabilityMessage("");
     };
@@ -480,17 +804,30 @@ export default function ReservationForm() {
             setSelectedTime("");
             setMessage("");
             setAvailableSlotsByApi([]);
+            setBusinessHour(null);
             setAvailabilityError(false);
             setAvailabilityMessage("");
 
+            // ✅ 選択サービスから course を補完
+            const picked = services.find((s) => String(s.id) === String(value));
+            const courseName = getCategoryName(picked) || "";
+
+            setFormData((prev) => ({
+                ...prev,
+                service_id: value,
+                course: courseName,
+            }));
+
             // ✅ 追加：service 選択からカテゴリを追随（category_id が取れる時だけ）
             if (canFilterByCategory) {
-                const picked = services.find((s) => String(s.id) === String(value));
                 const cid = getCategoryId(picked);
                 if (cid) {
                     setSelectedCategoryId(String(cid));
                 }
             }
+
+            // ✅ 直アクセスでセレクトから選んだ場合は隠さない
+            setHideCourseMenuSelectors(false);
         }
     };
 
@@ -526,6 +863,30 @@ export default function ReservationForm() {
         if (!formData.service_id) localErrors.service_id = ["メニューを選択してください。"];
         if (!selectedTime) localErrors.start_time = ["時間を選択してください。"];
 
+        // ✅ 追加：開始時刻の上限チェック（18:30まで）
+        if (selectedTime) {
+            const hardLastStartMin = hhmmToMinutes(HARD_LAST_START_HHMM);
+            const selMin = hhmmToMinutes(selectedTime);
+            if (hardLastStartMin != null && selMin != null && selMin > hardLastStartMin) {
+                localErrors.start_time = ["予約できる開始時刻は18:30までです。"];
+            }
+        }
+
+        // ✅ 追加：当日は「開始時刻の1時間前」まで（1時間前は不可）
+        if (selectedTime && !localErrors.start_time) {
+            const todayYmd = toYmd(new Date());
+            if (selectedYmd === todayYmd) {
+                const now = new Date();
+                const nowMin = now.getHours() * 60 + now.getMinutes();
+                const leadCutoffMin = nowMin + Number(MIN_LEAD_MINUTES || 0);
+                const selMin = hhmmToMinutes(selectedTime);
+
+                if (selMin != null && selMin <= leadCutoffMin) {
+                    localErrors.start_time = ["当日のご予約は開始時刻の1時間前まで可能です。"];
+                }
+            }
+        }
+
         if (Object.keys(localErrors).length > 0) {
             setErrors(localErrors);
             return;
@@ -542,11 +903,17 @@ export default function ReservationForm() {
             return;
         }
 
+        // ✅ course が空なら service から補完（メール表示用）
+        const courseForSend = String(formData.course || "").trim() || getCategoryName(selectedService);
+
         const payload = {
             ...formData,
+            course: courseForSend,
             date: selectedYmd,
             start_time: selectedTime,
             end_time: pickedSlot.end,
+            // ✅ オプションは notes に埋め込む（DB追加なしでメールに載せるため）
+            notes: buildNotesWithOption(formData.notes, selectedOptions),
         };
 
         try {
@@ -564,24 +931,33 @@ export default function ReservationForm() {
                 setErrors({});
                 setMessage("✅ ご予約が完了しました！メールをご確認ください。");
 
+                // ✅ 成功後も「menu_price から来た場合」は service/course を保持（UIが隠れているため）
+                const keepServiceId = hideCourseMenuSelectors ? formData.service_id : "";
+                const keepCourse = hideCourseMenuSelectors ? courseForSend : "";
+                const keepCategoryId = hideCourseMenuSelectors ? selectedCategoryId : "";
+
                 setSelectedTime("");
+                setSelectedOption("なし");
+
                 setFormData({
                     name: "",
                     phone: "",
-                    service_id: "",
+                    service_id: keepServiceId,
                     email: "",
                     maker: "",
                     car_model: "",
-                    // ✅ 追加（コース）
-                    course: "",
+                    course: keepCourse,
                     notes: "",
                 });
-                setAvailableSlotsByApi([]);
-                setAvailabilityError(false);
-                setAvailabilityMessage("");
 
-                // ✅ 追加：カテゴリも初期化（直アクセス時の挙動を維持したいなら空に戻す）
-                setSelectedCategoryId("");
+                if (!hideCourseMenuSelectors) {
+                    setSelectedCategoryId("");
+                } else {
+                    setSelectedCategoryId(keepCategoryId);
+                }
+
+                // ✅ 表示ズレ防止：同条件でも空き枠を再取得
+                setAvailabilityNonce((n) => n + 1);
             } else {
                 const errorData = await response.json().catch(() => ({}));
 
@@ -622,7 +998,9 @@ export default function ReservationForm() {
                 {/* ✅ A案：メッセージは「フォーム内の先頭」に統一 */}
                 {topMessage && (
                     <p
-                        className={`reservation-message ${topMessageIsSuccess ? "reservation-message--success" : "reservation-message--error"
+                        className={`reservation-message ${topMessageIsSuccess
+                            ? "reservation-message--success"
+                            : "reservation-message--error"
                             }`}
                         aria-live="polite"
                     >
@@ -644,7 +1022,6 @@ export default function ReservationForm() {
                         className="reservation-input"
                         placeholder="例）山田 太郎"
                     />
-                    {/* ✅ 最小追加：項目別エラー */}
                     {fieldError("name") && (
                         <p className="reservation-message reservation-message--error" aria-live="polite">
                             {fieldError("name")}
@@ -666,10 +1043,30 @@ export default function ReservationForm() {
                         className="reservation-input"
                         placeholder="例）example@gmail.com"
                     />
-                    {/* ✅ 最小追加：項目別エラー */}
                     {fieldError("email") && (
                         <p className="reservation-message reservation-message--error" aria-live="polite">
                             {fieldError("email")}
+                        </p>
+                    )}
+                </div>
+
+                {/* 電話番号（必須） */}
+                <div className="reservation-field">
+                    <label className="reservation-label">
+                        電話番号 <span className="reservation-required">必須</span>
+                    </label>
+                    <input
+                        type="tel"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleChange}
+                        required
+                        className="reservation-input"
+                        placeholder="例）09012345678 ハイフンはなしで入力してください"
+                    />
+                    {fieldError("phone") && (
+                        <p className="reservation-message reservation-message--error" aria-live="polite">
+                            {fieldError("phone")}
                         </p>
                     )}
                 </div>
@@ -688,7 +1085,6 @@ export default function ReservationForm() {
                         className="reservation-input"
                         placeholder="例）トヨタ"
                     />
-                    {/* ✅ 最小追加：項目別エラー */}
                     {fieldError("maker") && (
                         <p className="reservation-message reservation-message--error" aria-live="polite">
                             {fieldError("maker")}
@@ -710,7 +1106,6 @@ export default function ReservationForm() {
                         className="reservation-input"
                         placeholder="例）プリウス"
                     />
-                    {/* ✅ 最小追加：項目別エラー */}
                     {fieldError("car_model") && (
                         <p className="reservation-message reservation-message--error" aria-live="polite">
                             {fieldError("car_model")}
@@ -718,83 +1113,87 @@ export default function ReservationForm() {
                     )}
                 </div>
 
-                {/* 電話番号（必須） */}
-                <div className="reservation-field">
-                    <label className="reservation-label">
-                        電話番号 <span className="reservation-required">必須</span>
-                    </label>
-                    <input
-                        type="tel"
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleChange}
-                        required
-                        className="reservation-input"
-                        placeholder="例）09012345678 ハイフンはなしで入力してください"
-                    />
-                    {/* ✅ 最小追加：項目別エラー */}
-                    {fieldError("phone") && (
-                        <p className="reservation-message reservation-message--error" aria-live="polite">
-                            {fieldError("phone")}
-                        </p>
-                    )}
-                </div>
 
-                {/* ✅ 追加：カテゴリ（category_id が取れる時だけ表示） */}
-                {canFilterByCategory && (
-                    <div className="reservation-field">
-                        <label className="reservation-label">コース</label>
-                        <select
-                            value={selectedCategoryId}
-                            onChange={handleCategoryChange}
-                            className="reservation-select"
-                        >
-                            <option value="">すべて</option>
-                            {categories.map((c) => (
-                                <option key={c.id} value={c.id}>
-                                    {c.name}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
+
+                {/* ✅ コース/メニュー：menu_price から来た場合は「非表示」だが値は保持して送信 */}
+                {!hideCourseMenuSelectors && (
+                    <>
+                        {/* ✅ カテゴリ（category_id が取れる時だけ表示） */}
+                        {canFilterByCategory && (
+                            <div className="reservation-field">
+                                <label className="reservation-label">コース</label>
+                                <select
+                                    value={selectedCategoryId}
+                                    onChange={handleCategoryChange}
+                                    className="reservation-select"
+                                >
+                                    <option value="">すべて</option>
+                                    {categories.map((c) => (
+                                        <option key={c.id} value={c.id}>
+                                            {c.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
+
+                        {/* メニュー（必須） */}
+                        <div className="reservation-field">
+                            <label className="reservation-label">
+                                メニュー名 <span className="reservation-required">必須</span>
+                            </label>
+                            <select
+                                name="service_id"
+                                value={formData.service_id}
+                                onChange={handleChange}
+                                required
+                                className="reservation-select"
+                            >
+                                <option value="">選択してください</option>
+                                {filteredServices.map((service) => (
+                                    <option key={service.id} value={service.id}>
+                                        {service.name}（{service.duration_minutes}分）
+                                    </option>
+                                ))}
+                            </select>
+
+                            {fieldError("service_id") && (
+                                <p className="reservation-message reservation-message--error" aria-live="polite">
+                                    {fieldError("service_id")}
+                                </p>
+                            )}
+
+                            <a
+                                href="https://www.keepercoating.jp/lineup/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="reservation-menu-help"
+                            >
+                                メニューの詳細をご確認後メニューを選択してください。
+                            </a>
+                        </div>
+                    </>
                 )}
 
-                {/* メニュー（必須） */}
+                {/* ✅ オプション（単一選択・デフォルト「なし」） */}
                 <div className="reservation-field">
-                    <label className="reservation-label">
-                        メニュー <span className="reservation-required">必須</span>
-                    </label>
-                    <select
-                        name="service_id"
-                        value={formData.service_id}
-                        onChange={handleChange}
-                        required
-                        className="reservation-select"
-                    >
-                        <option value="">選択してください</option>
-                        {filteredServices.map((service) => (
-                            <option key={service.id} value={service.id}>
-                                {service.name}（¥{service.price} / {service.duration_minutes}分）
-                            </option>
+                    <label className="reservation-label">オプション</label>
+                    <div className="reservation-time-grid">
+                        {OPTION_ITEMS.map((opt) => (
+                            <button
+                                key={opt}
+                                type="button"
+                                onClick={() => toggleOption(opt)}
+                                className={`reservation-time-button ${selectedOptions.includes(opt)
+                                    ? "reservation-time-button--selected"
+                                    : ""
+                                    }`}
+                                aria-pressed={selectedOptions.includes(opt)}
+                            >
+                                {opt}
+                            </button>
                         ))}
-                    </select>
-
-                    {/* ✅ 最小追加：項目別エラー */}
-                    {fieldError("service_id") && (
-                        <p className="reservation-message reservation-message--error" aria-live="polite">
-                            {fieldError("service_id")}
-                        </p>
-                    )}
-
-                    {/* ✅ 追加：指定リンク文言（メニュー直下） */}
-                    <a
-                        href="https://www.keepercoating.jp/lineup/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="reservation-menu-help"
-                    >
-                        メニューの詳細をご確認後メニューを選択してください。
-                    </a>
+                    </div>
                 </div>
 
                 {/* 日付（必須） */}
@@ -825,6 +1224,7 @@ export default function ReservationForm() {
                                         return next;
                                     });
                                     setAvailableSlotsByApi([]);
+                                    setBusinessHour(null);
                                     setAvailabilityError(false);
                                     setAvailabilityMessage("");
                                 }}
@@ -832,13 +1232,17 @@ export default function ReservationForm() {
                                 tileDisabled={tileDisabled}
                                 onActiveStartDateChange={({ activeStartDate }) => {
                                     if (!activeStartDate) return;
-                                    fetchMonthSchedule(activeStartDate.getFullYear(), activeStartDate.getMonth() + 1);
+                                    fetchMonthSchedule(
+                                        activeStartDate.getFullYear(),
+                                        activeStartDate.getMonth() + 1
+                                    );
                                 }}
                             />
                         </div>
-                        <p className="reservation-date-text">選択された日付: {date.toLocaleDateString()}</p>
+                        <p className="reservation-date-text">
+                            選択された日付: {date.toLocaleDateString()}
+                        </p>
 
-                        {/* ✅ 最小追加：項目別エラー（date） */}
                         {fieldError("date") && (
                             <p className="reservation-message reservation-message--error" aria-live="polite">
                                 {fieldError("date")}
@@ -864,46 +1268,60 @@ export default function ReservationForm() {
                                         : availabilityError
                                             ? availabilityMessage
                                                 ? `※ ${availabilityMessage}`
-                                                : "※ 空き状況の取得に失敗しました（時間は表示しません）"
+                                                : "※ 空き状況の取得に失敗しました。"
                                             : availabilityMessage
                                                 ? `※ ${availabilityMessage}`
-                                                : "空き時間のみ表示しています。"}
+                                                : "○：予約可 / ×：予約不可（選択できません）"}
                                 </p>
 
-                                {displayTimes.length === 0 ? (
+                                {timeItems.length === 0 ? (
                                     <p className="reservation-time-note">
-                                        {availabilityLoading ? "" : availabilityError ? "" : "※ 空き時間がありません"}
+                                        {availabilityLoading ? "" : availabilityError ? "" : "※ 予約枠がありません"}
                                     </p>
                                 ) : (
                                     <div className="reservation-time-grid">
-                                        {displayTimes.map((time) => (
-                                            <button
-                                                type="button"
-                                                key={time}
-                                                onClick={() => {
-                                                    setSelectedTime(time);
-                                                    setMessage("");
-                                                    setErrors((prev) => {
-                                                        if (!prev?.start_time) return prev;
-                                                        const next = { ...prev };
-                                                        delete next.start_time;
-                                                        return next;
-                                                    });
-                                                }}
-                                                className={`reservation-time-button ${selectedTime === time ? "reservation-time-button--selected" : ""
-                                                    }`}
-                                            >
-                                                {time}
-                                            </button>
-                                        ))}
+                                        {timeItems.map(({ time, available }) => {
+                                            const isSelected = selectedTime === time;
+                                            const disabled = !available;
+                                            return (
+                                                <button
+                                                    type="button"
+                                                    key={time}
+                                                    disabled={disabled}
+                                                    onClick={() => {
+                                                        if (!available) return;
+                                                        setSelectedTime(time);
+                                                        setMessage("");
+                                                        setErrors((prev) => {
+                                                            if (!prev?.start_time) return prev;
+                                                            const next = { ...prev };
+                                                            delete next.start_time;
+                                                            return next;
+                                                        });
+                                                    }}
+                                                    className={`reservation-time-button ${isSelected ? "reservation-time-button--selected" : ""
+                                                        } ${disabled ? "reservation-time-button--disabled" : ""}`}
+                                                    aria-disabled={disabled}
+                                                >
+                                                    <div>
+                                                        <div>{time}</div>
+                                                        {/* ✅ 時刻の下に ○/× を表示 */}
+                                                        <div>{available ? "○" : "×"}</div>
+                                                        {/* ✅ ○ の時だけ「残り1ブース」を表示 */}
+                                                        <div>{available ? "" : ""}</div>
+                                                    </div>
+                                                </button>
+                                            );
+                                        })}
                                     </div>
                                 )}
                             </>
                         )}
 
-                        {selectedTime && <p className="reservation-selected-time">選択された時間: {selectedTime}</p>}
+                        {selectedTime && (
+                            <p className="reservation-selected-time">選択された時間: {selectedTime}</p>
+                        )}
 
-                        {/* ✅ 最小追加：項目別エラー（start_time） */}
                         {fieldError("start_time") && (
                             <p className="reservation-message reservation-message--error" aria-live="polite">
                                 {fieldError("start_time")}
@@ -923,7 +1341,6 @@ export default function ReservationForm() {
                         className="reservation-textarea"
                         placeholder="ご要望・補足があればご記入ください（任意）"
                     />
-                    {/* ✅ 最小追加：項目別エラー（notes） */}
                     {fieldError("notes") && (
                         <p className="reservation-message reservation-message--error" aria-live="polite">
                             {fieldError("notes")}
@@ -939,7 +1356,9 @@ export default function ReservationForm() {
                 {/* ✅ 追加：フォーム先頭と同じメッセージを「予約する」ボタン直前にも表示 */}
                 {topMessage && (
                     <p
-                        className={`reservation-message ${topMessageIsSuccess ? "reservation-message--success" : "reservation-message--error"
+                        className={`reservation-message ${topMessageIsSuccess
+                            ? "reservation-message--success"
+                            : "reservation-message--error"
                             }`}
                         aria-live="polite"
                     >

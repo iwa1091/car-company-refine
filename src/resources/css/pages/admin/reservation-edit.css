@@ -269,10 +269,20 @@
     margin-top: 0.45rem;
 }
 
+/* 空表示（grid の子でなくても崩れないようにする） */
 .admin-reservation-edit-time-empty {
+    /* grid 前提の指定は残しつつ、wrapper 直下でも自然に見えるよう補強 */
     grid-column: 1 / -1;
     font-size: 0.9rem;
     color: var(--text-muted);
+    margin-top: 0.45rem;
+    padding: 0.55rem 0.75rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    background: rgba(10, 14, 26, 0.25);
+    backdrop-filter: blur(var(--glass-blur, 12px));
+    -webkit-backdrop-filter: blur(var(--glass-blur, 12px));
+    display: block;
 }
 
 /* 時間ボタン */
@@ -386,6 +396,12 @@
     box-shadow: none;
     transform: none;
     filter: none;
+}
+.admin-reservation-edit-error {
+    margin-top: 0.35rem;
+    font-size: 0.85rem;
+    line-height: 1.3;
+    color: #b43d3d;
 }
 
 /* ============================================

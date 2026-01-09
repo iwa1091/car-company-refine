@@ -163,6 +163,21 @@ class ReservationController extends Controller
             'service_id' => ['required', 'exists:services,id'],
         ]);
 
+        // =========================
+        // ✅ DEBUG（追加：既存処理は壊さず、checkAvailability 内だけで完結）
+        // /api/reservations/check?date=YYYY-MM-DD&service_id=ID&debug=1&debug_time=18:30
+        // =========================
+        $debug = $request->boolean('debug');
+        $debugTime = $request->input('debug_time', '18:30'); // 例: 18:30 を追跡
+        $debugInfo = [];
+
+        $logDebug = function (string $label, array $ctx = []) use ($debug) {
+            if ($debug) {
+                Log::debug("[checkAvailability] {$label}", $ctx);
+            }
+        };
+        // =========================
+
         if ($validator->fails()) {
             return response()->json([
                 'message' => '入力内容に誤りがあります。',
@@ -179,22 +194,76 @@ class ReservationController extends Controller
         $this->ensureBusinessHoursSeeded((int)$date->year, (int)$date->month);
         $bh = $this->resolveBusinessHourForDate($date);
 
+        // ✅ 追加：早期returnでも business_hour を返してフロントの businessHour:null を避ける（不一致回避）
+        $tmpOpen = ($bh && !empty($bh->open_time)) ? $this->toHHmm($bh->open_time) : null;
+        $tmpClose = ($bh && !empty($bh->close_time)) ? $this->toHHmm($bh->close_time) : null;
+        $businessHourPayload = [
+            'open_time'  => $tmpOpen,
+            'close_time' => $tmpClose,
+            'is_closed'  => (bool)($bh->is_closed ?? true),
+        ];
+
         if (!$bh || $bh->is_closed || !$bh->open_time || !$bh->close_time) {
+            $logDebug('early_return_closed_or_missing_bh', [
+                'date' => $date->toDateString(),
+                'service_id' => (int)$request->service_id,
+                'duration' => $duration,
+                'bh_exists' => (bool)$bh,
+                'bh_is_closed' => (bool)($bh->is_closed ?? true),
+                'open_time_raw' => $bh->open_time ?? null,
+                'close_time_raw' => $bh->close_time ?? null,
+                'debug_time' => $debugTime,
+            ]);
+
+            if ($debug) {
+                $debugInfo['reason'] = 'closed_or_missing_bh';
+                $debugInfo['business_hour'] = $businessHourPayload;
+                $debugInfo['debug_time'] = $debugTime;
+            }
+
             return response()->json([
                 'available_slots' => [],
                 'availableSlots'  => [], // ✅ 追加（互換）
+                'business_hour'   => $businessHourPayload,
+                'businessHour'    => $businessHourPayload, // ✅ 追加（互換）
                 'message'         => '本日は終日休業です。',
+                'debug'           => $debug ? $debugInfo : null,
             ], 200);
         }
 
         $openHHmm  = $this->toHHmm($bh->open_time);
         $closeHHmm = $this->toHHmm($bh->close_time);
 
+        // business_hour は確定値に更新
+        $businessHourPayload = [
+            'open_time'  => $openHHmm,
+            'close_time' => $closeHHmm,
+            'is_closed'  => (bool)$bh->is_closed,
+        ];
+
         if (!$openHHmm || !$closeHHmm) {
+            $logDebug('early_return_bad_time_format', [
+                'date' => $date->toDateString(),
+                'service_id' => (int)$request->service_id,
+                'duration' => $duration,
+                'openHHmm' => $openHHmm,
+                'closeHHmm' => $closeHHmm,
+                'debug_time' => $debugTime,
+            ]);
+
+            if ($debug) {
+                $debugInfo['reason'] = 'bad_time_format';
+                $debugInfo['business_hour'] = $businessHourPayload;
+                $debugInfo['debug_time'] = $debugTime;
+            }
+
             return response()->json([
                 'available_slots' => [],
                 'availableSlots'  => [], // ✅ 追加（互換）
+                'business_hour'   => $businessHourPayload,
+                'businessHour'    => $businessHourPayload, // ✅ 追加（互換）
                 'message'         => '本日は終日休業です。',
+                'debug'           => $debug ? $debugInfo : null,
             ], 200);
         }
 
@@ -202,10 +271,28 @@ class ReservationController extends Controller
         $closeTime = Carbon::createFromFormat('Y-m-d H:i', $date->toDateString().' '.$closeHHmm, $tz);
 
         if ($closeTime->lte($openTime)) {
+            $logDebug('early_return_invalid_open_close', [
+                'date' => $date->toDateString(),
+                'service_id' => (int)$request->service_id,
+                'duration' => $duration,
+                'open' => $openTime->format('H:i'),
+                'close' => $closeTime->format('H:i'),
+                'debug_time' => $debugTime,
+            ]);
+
+            if ($debug) {
+                $debugInfo['reason'] = 'invalid_open_close';
+                $debugInfo['business_hour'] = $businessHourPayload;
+                $debugInfo['debug_time'] = $debugTime;
+            }
+
             return response()->json([
                 'available_slots' => [],
                 'availableSlots'  => [], // ✅ 追加（互換）
+                'business_hour'   => $businessHourPayload,
+                'businessHour'    => $businessHourPayload, // ✅ 追加（互換）
                 'message'         => '営業時間設定が不正です。',
+                'debug'           => $debug ? $debugInfo : null,
             ], 200);
         }
 
@@ -237,25 +324,81 @@ class ReservationController extends Controller
         $stepMinutes = 15;
         $currentTime = $openTime->copy();
 
-        // ✅ 予約受付は「開始1時間前まで」
+        // ✅ 予約受付は「開始時刻の60分前より後」（ちょうど60分後は不可）
         $now = Carbon::now($tz)->second(0);
         $minStart = $now->copy()->addHour();
+
+        // ⬇⬇⬇ ここを修正（厳密に「より後」にする）
         $mod = ((int)$minStart->minute) % $stepMinutes;
-        if ($mod !== 0) {
+        if ($mod === 0) {
+            // ちょうど境界（例：18:00, 18:45）は「不可」なので次の枠へ
+            $minStart->addMinutes($stepMinutes);
+        } else {
+            // 境界でない場合は次の15分境界へ切り上げ
             $minStart->addMinutes($stepMinutes - $mod);
         }
+        // ⬆⬆⬆ ここまで修正
+
+        // ✅ DEBUG：ベース情報（この時点で「なぜ候補が落ちるか」を追える）
+        $lastPossibleStart = $closeTime->copy()->subMinutes($duration);
+        $logDebug('base', [
+            'date' => $date->toDateString(),
+            'service_id' => (int)$request->service_id,
+            'duration' => $duration,
+            'open' => $openTime->format('H:i'),
+            'close' => $closeTime->format('H:i'),
+            'last_possible_start' => $lastPossibleStart->format('H:i'),
+            'now' => $now->format('Y-m-d H:i:s'),
+            'minStart' => $minStart->format('Y-m-d H:i'),
+            'booked_count' => count($bookedSlots),
+            'debug_time' => $debugTime,
+        ]);
+
+        if ($debug) {
+            $debugInfo['base'] = [
+                'date' => $date->toDateString(),
+                'service_id' => (int)$request->service_id,
+                'duration' => $duration,
+                'open' => $openTime->format('H:i'),
+                'close' => $closeTime->format('H:i'),
+                'last_possible_start' => $lastPossibleStart->format('H:i'),
+                'now' => $now->format('Y-m-d H:i:s'),
+                'minStart' => $minStart->format('Y-m-d H:i'),
+                'booked_count' => count($bookedSlots),
+                'debug_time' => $debugTime,
+            ];
+            // debug_time が最終開始より後なら、到達前に break し得る
+            $debugInfo['debug_time_after_last_start'] = (is_string($debugTime) && preg_match('/^\d{2}:\d{2}$/', $debugTime))
+                ? ($debugTime > $lastPossibleStart->format('H:i'))
+                : null;
+        }
+
+        $debugChecked = false;
 
         while ($currentTime->lt($closeTime)) {
             $slotEnd = $currentTime->copy()->addMinutes($duration);
             if ($slotEnd->gt($closeTime)) {
+                // ✅ DEBUG：debug_time の判定前に終了しているケースを拾う
+                if ($debug && !$debugChecked && is_string($debugTime) && $currentTime->format('H:i') === $debugTime) {
+                    $logDebug('candidate_break_close', [
+                        'start' => $currentTime->format('H:i'),
+                        'end' => $slotEnd->format('H:i'),
+                        'close' => $closeTime->format('H:i'),
+                    ]);
+                    $debugInfo['candidate'] = [
+                        'start' => $currentTime->format('H:i'),
+                        'end' => $slotEnd->format('H:i'),
+                        'reason' => 'slotEnd_gt_closeTime',
+                        'close' => $closeTime->format('H:i'),
+                    ];
+                    $debugChecked = true;
+                }
                 break;
             }
 
-            if ($currentTime->lt($minStart)) {
-                $currentTime->addMinutes($stepMinutes);
-                continue;
-            }
+            $isBeforeMinStart = $currentTime->lt($minStart);
 
+            // ✅ 既存ロジックは維持（重なり判定）
             $isBooked = collect($bookedSlots)->contains(function ($booked) use ($currentTime, $slotEnd) {
                 return (
                     ($currentTime->gte($booked['start']) && $currentTime->lt($booked['end'])) ||
@@ -263,6 +406,56 @@ class ReservationController extends Controller
                     ($currentTime->lt($booked['start']) && $slotEnd->gt($booked['end']))
                 );
             });
+
+            // ✅ DEBUG：debug_time だけ「なぜ落ちたか」を確定ログに出す
+            if ($debug && !$debugChecked && is_string($debugTime) && $currentTime->format('H:i') === $debugTime) {
+                // どの予約に当たったか（最初の1件だけ）も出す（※1回だけなので負荷は増えにくい）
+                $hit = collect($bookedSlots)->first(function ($booked) use ($currentTime, $slotEnd) {
+                    return (
+                        ($currentTime->gte($booked['start']) && $currentTime->lt($booked['end'])) ||
+                        ($slotEnd->gt($booked['start']) && $slotEnd->lte($booked['end'])) ||
+                        ($currentTime->lt($booked['start']) && $slotEnd->gt($booked['end']))
+                    );
+                });
+
+                $hitFmt = null;
+                if ($hit && isset($hit['start'], $hit['end']) && $hit['start'] instanceof Carbon && $hit['end'] instanceof Carbon) {
+                    $hitFmt = [
+                        'start' => $hit['start']->format('H:i'),
+                        'end'   => $hit['end']->format('H:i'),
+                    ];
+                }
+
+                $reason = $isBeforeMinStart ? 'before_minStart'
+                    : ($isBooked ? 'overlap_booked' : 'available');
+
+                $logDebug('candidate', [
+                    'start' => $currentTime->format('H:i'),
+                    'end' => $slotEnd->format('H:i'),
+                    'minStart' => $minStart->format('H:i'),
+                    'is_before_minStart' => $isBeforeMinStart,
+                    'isBooked' => $isBooked,
+                    'overlap' => $hitFmt,
+                    'reason' => $reason,
+                ]);
+
+                $debugInfo['candidate'] = [
+                    'start' => $currentTime->format('H:i'),
+                    'end' => $slotEnd->format('H:i'),
+                    'minStart' => $minStart->format('H:i'),
+                    'is_before_minStart' => $isBeforeMinStart,
+                    'isBooked' => $isBooked,
+                    'overlap' => $hitFmt,
+                    'reason' => $reason,
+                ];
+
+                $debugChecked = true;
+            }
+
+            if ($isBeforeMinStart) {
+                $currentTime->addMinutes($stepMinutes);
+                continue;
+            }
 
             if (!$isBooked) {
                 $availableSlots[] = [
@@ -279,11 +472,28 @@ class ReservationController extends Controller
             'close_time' => $closeHHmm,
         ];
 
+        // ✅ DEBUG：18:30 が「ループで一度も評価されなかった」ケースも判別できるようにする
+        if ($debug && !isset($debugInfo['candidate'])) {
+            $debugInfo['candidate'] = [
+                'start' => $debugTime,
+                'reason' => 'not_evaluated_in_loop',
+                'hint' => 'debug_time が last_possible_start より後 / もしくは営業時間外のため候補にならない可能性があります。',
+                'last_possible_start' => $lastPossibleStart->format('H:i'),
+            ];
+            $logDebug('candidate_not_evaluated', [
+                'debug_time' => $debugTime,
+                'last_possible_start' => $lastPossibleStart->format('H:i'),
+                'open' => $openTime->format('H:i'),
+                'close' => $closeTime->format('H:i'),
+            ]);
+        }
+
         return response()->json([
             'available_slots' => $availableSlots,
             'availableSlots'  => $availableSlots, // ✅ 追加（互換）
             'business_hour'   => $businessHour,
             'businessHour'    => $businessHour,    // ✅ 追加（互換）
+            'debug'           => $debug ? $debugInfo : null,
         ], 200);
     }
 
@@ -400,14 +610,21 @@ class ReservationController extends Controller
             return response()->json(['message' => '終了時刻が不正です。'], 422);
         }
 
-        // ✅ 予約受付は「開始1時間前まで」（checkAvailability と同じ丸め方で強制）
+        // ✅ 予約受付は「開始時刻の60分前より後」（ちょうど60分後は不可）
         $stepMinutes = 15;
         $now = Carbon::now($tz)->second(0);
         $minStart = $now->copy()->addHour();
+
+        // ⬇⬇⬇ ここを修正（厳密に「より後」にする）
         $mod = ((int)$minStart->minute) % $stepMinutes;
-        if ($mod !== 0) {
+        if ($mod === 0) {
+            // ちょうど境界（例：18:00, 18:45）は「不可」なので次の枠へ
+            $minStart->addMinutes($stepMinutes);
+        } else {
+            // 境界でない場合は次の15分境界へ切り上げ
             $minStart->addMinutes($stepMinutes - $mod);
         }
+        // ⬆⬆⬆ ここまで修正
 
         if ($startDt->lt($minStart)) {
             return response()->json(['message' => '予約は開始1時間前まで受け付けています。'], 422);
@@ -562,6 +779,9 @@ class ReservationController extends Controller
 
                 // ✅ 追加（コース）
                 'course'           => $reservation->course ?? null,
+
+                // ✅ 追加（備考：オプションもここに埋め込まれる想定）
+                'notes'            => $reservation->notes ?? null,
 
                 'service_id'       => $reservation->service_id,
             ],

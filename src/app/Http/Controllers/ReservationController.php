@@ -37,6 +37,12 @@ class ReservationController extends Controller
             'name'       => 'nullable|string',
             'email'      => 'nullable|email',
             'phone'      => 'nullable|string|max:20', // reservations テーブルに合わせる
+
+            // ✅ 追加（管理画面で「-」になる原因対策：保存できるようにする）
+            'maker'      => 'nullable|string|max:50',
+            'car_model'  => 'nullable|string|max:100',
+            'course'     => 'nullable|string|max:255',
+
             'date'       => 'required|date',
             'start_time' => 'required',
             'end_time'   => 'required',
@@ -70,6 +76,11 @@ class ReservationController extends Controller
         $baseEmail = $user ? $user->email : $request->email;
         $basePhone = $user ? $user->phone : $request->phone;
 
+        // ✅ 追加（車両情報・コース：ログインユーザーでも request から保存する）
+        $baseMaker    = $request->maker;
+        $baseCarModel = $request->car_model;
+        $baseCourse   = $request->course;
+
         // メールアドレスをキーに Customer を作成 or 更新
         $customer = null;
         if ($baseEmail) {
@@ -100,6 +111,11 @@ class ReservationController extends Controller
             'name'  => $baseName,
             'email' => $baseEmail,
             'phone' => $basePhone,
+
+            // ✅ 追加（管理画面で表示したい項目）
+            'maker'     => $baseMaker,
+            'car_model' => $baseCarModel,
+            'course'    => $baseCourse,
 
             // 初期ステータス（元の仕様を維持）
             'status' => 'confirmed',

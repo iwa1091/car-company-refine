@@ -66,12 +66,14 @@
 
                                 <div class="card-content">
                                     <div class="card-price-info">
+                                        {{-- 価格は非表示 --}}
+                                        {{--
                                         @if(!empty($service->price_text))
                                             <span class="card-price">{{ $service->price_text }}</span>
                                         @else
                                             <span class="card-price">¥{{ number_format($service->price) }}</span>
                                         @endif
-
+                                        --}}
                                         <div class="card-duration">
                                             <span class="duration-text">{{ $service->duration_minutes }}分</span>
                                         </div>
@@ -98,12 +100,12 @@
                 <div class="note-item">
                     <p>・料金は車のサイズにより変動します。こちらの詳細からご確認ください。</p>
                                         <a
-                        href="https://www.keepercoating.jp/lineup/"
+                        href="{{ asset('pdf/menu.pdf') }}"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="reservation-menu-help"
                     >
-                        メニューの詳細をご確認後メニューを選択してください。
+                        車種サイズ表はこちら
                     </a>
                 </div>
 

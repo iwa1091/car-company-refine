@@ -109,7 +109,13 @@ function hhmmToMinutes(hhmm) {
 }
 
 export default function ReservationEdit() {
-    const { reservation } = usePage().props;
+    // ✅ Inertia の server-side validation errors も拾う（ある環境/ない環境どちらでも壊れない）
+    const page = usePage();
+    const reservation = page?.props?.reservation;
+    const serverErrors = page?.props?.errors || {}; // { name: "...", start_time: "...", ... } 想定
+
+    // ✅ 追加：フロント側バリデーション errors
+    const [clientErrors, setClientErrors] = useState({});
 
     // 初期値を “必ず” 正規化（ここがないとボタン選択の一致が崩れます）
     const initialDate = normalizeYmd(reservation?.date);
@@ -279,9 +285,28 @@ export default function ReservationEdit() {
         activeMonth,
     ]);
 
+    // ✅ 追加：エラー取得（client > server の優先）
+    const getError = (field) => {
+        if (clientErrors && clientErrors[field]) return clientErrors[field];
+        if (serverErrors && serverErrors[field]) return serverErrors[field];
+        return "";
+    };
+
+    // ✅ 追加：特定フィールドの client error だけ消す（入力したら下のメッセージが消える）
+    const clearClientError = (field) => {
+        setClientErrors((prev) => {
+            if (!prev || !prev[field]) return prev;
+            const next = { ...prev };
+            delete next[field];
+            return next;
+        });
+    };
+
     // 入力変更（name）
     const handleChange = (e) => {
-        setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+        const { name, value } = e.target;
+        setFormData((prev) => ({ ...prev, [name]: value }));
+        clearClientError(name);
     };
 
     // カレンダー変更（"YYYY-MM-DD" を組み立て）
@@ -301,6 +326,11 @@ export default function ReservationEdit() {
             start_time: "",
             end_time: "",
         }));
+
+        // ✅ 追加：日付/時間に関連する client error を消す
+        clearClientError("date");
+        clearClientError("start_time");
+        clearClientError("end_time");
     };
 
     // カレンダーの月移動時（表示月の営業時間を取得）
@@ -326,11 +356,58 @@ export default function ReservationEdit() {
             start_time: t,
             end_time: end,
         }));
+
+        // ✅ 追加：時間系の client error を消す
+        clearClientError("start_time");
+        clearClientError("end_time");
+    };
+
+    // ✅ 追加：フロント側バリデーション（noValidate 前提）
+    const validate = () => {
+        const errs = {};
+
+        const name = String(formData.name || "").trim();
+        const date = normalizeYmd(formData.date);
+        const start = normalizeHHmm(formData.start_time);
+
+        if (!name) {
+            errs.name = "氏名は必須です。";
+        } else if (name.length > 255) {
+            errs.name = "氏名は255文字以内で入力してください。";
+        }
+
+        if (!date) {
+            errs.date = "日付は必須です。";
+        } else if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+            errs.date = "日付の形式が不正です。";
+        }
+
+        if (!formData.service_id) {
+            errs.service_id = "メニューが取得できませんでした（service_id が空です）。";
+        }
+
+        if (!start) {
+            errs.start_time = "時間を選択してください。";
+        } else if (!/^\d{2}:\d{2}$/.test(start)) {
+            errs.start_time = "時間の形式が不正です。";
+        } else if (Array.isArray(availableTimes) && availableTimes.length > 0) {
+            // ✅「営業枠に存在する開始時刻」だけOK（仕様に合う）
+            if (!availableTimes.includes(start)) {
+                errs.start_time = "選択できない時間です。別の時間を選択してください。";
+            }
+        }
+
+        return errs;
     };
 
     // 更新処理
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        // ✅ noValidate なので、ここでフロント検証する
+        const errs = validate();
+        setClientErrors(errs);
+        if (Object.keys(errs).length > 0) return;
 
         // ✅送信前に正規化（保険）
         const payload = {
@@ -340,7 +417,9 @@ export default function ReservationEdit() {
             end_time: normalizeHHmm(formData.end_time),
         };
 
-        router.put(route("admin.reservations.update", reservation.id), payload);
+        router.put(route("admin.reservations.update", reservation.id), payload, {
+            preserveScroll: true,
+        });
     };
 
     const calendarValue = useMemo(() => {
@@ -365,12 +444,11 @@ export default function ReservationEdit() {
                 <form
                     onSubmit={handleSubmit}
                     className="admin-reservation-edit-form"
+                    noValidate
                 >
                     {/* 氏名 */}
                     <div className="admin-reservation-edit-field">
-                        <label className="admin-reservation-edit-label">
-                            氏名
-                        </label>
+                        <label className="admin-reservation-edit-label">氏名</label>
                         <input
                             type="text"
                             name="name"
@@ -378,56 +456,53 @@ export default function ReservationEdit() {
                             onChange={handleChange}
                             className="admin-reservation-edit-input"
                         />
+                        {!!getError("name") && (
+                            <p className="admin-reservation-edit-error" aria-live="polite">
+                                {getError("name")}
+                            </p>
+                        )}
                     </div>
 
                     {/* カレンダー */}
                     <div className="admin-reservation-edit-field">
-                        <label className="admin-reservation-edit-label">
-                            日付
-                        </label>
+                        <label className="admin-reservation-edit-label">日付</label>
                         <div className="admin-reservation-edit-calendar-wrapper">
                             <div className="admin-reservation-edit-calendar">
                                 <Calendar
                                     value={calendarValue}
                                     onChange={handleDateChange}
-                                    onActiveStartDateChange={
-                                        handleActiveStartDateChange
-                                    }
+                                    onActiveStartDateChange={handleActiveStartDateChange}
                                     tileDisabled={tileDisabled}
                                 />
                             </div>
                             <p className="admin-reservation-edit-date-text">
-                                選択日:{" "}
-                                {formatDateTimeJp(
-                                    formData.date,
-                                    formData.start_time
-                                )}
+                                選択日: {formatDateTimeJp(formData.date, formData.start_time)}
                             </p>
+
+                            {!!getError("date") && (
+                                <p className="admin-reservation-edit-error" aria-live="polite">
+                                    {getError("date")}
+                                </p>
+                            )}
                         </div>
                     </div>
 
                     {/* 営業時間に基づく選択可能時間 */}
                     <div className="admin-reservation-edit-field">
-                        <label className="admin-reservation-edit-label">
-                            時間
-                        </label>
+                        <label className="admin-reservation-edit-label">時間</label>
                         <div className="admin-reservation-edit-time-wrapper">
                             {availableTimes.length > 0 ? (
                                 <div className="admin-reservation-edit-time-grid">
                                     {availableTimes.map((time) => {
                                         // ✅ ここで “選択中” を判定してクラスを付与（色を保持）
-                                        const normalized = normalizeHHmm(
-                                            formData.start_time
-                                        );
+                                        const normalized = normalizeHHmm(formData.start_time);
                                         const isSelected = normalized === time;
 
                                         return (
                                             <button
                                                 key={time}
                                                 type="button"
-                                                onClick={() =>
-                                                    handlePickTime(time)
-                                                }
+                                                onClick={() => handlePickTime(time)}
                                                 className={`admin-reservation-edit-time-button ${isSelected
                                                         ? "admin-reservation-edit-time-button--selected"
                                                         : ""
@@ -443,6 +518,17 @@ export default function ReservationEdit() {
                                     営業時間外または休業日です
                                 </p>
                             )}
+
+                            {!!getError("start_time") && (
+                                <p className="admin-reservation-edit-error" aria-live="polite">
+                                    {getError("start_time")}
+                                </p>
+                            )}
+                            {!!getError("service_id") && (
+                                <p className="admin-reservation-edit-error" aria-live="polite">
+                                    {getError("service_id")}
+                                </p>
+                            )}
                         </div>
                     </div>
 
@@ -451,11 +537,7 @@ export default function ReservationEdit() {
                         type="submit"
                         className="admin-reservation-edit-submit"
                         disabled={!formData.date || !formData.start_time}
-                        title={
-                            !formData.start_time
-                                ? "時間を選択してください"
-                                : ""
-                        }
+                        title={!formData.start_time ? "時間を選択してください" : ""}
                     >
                         更新
                     </button>

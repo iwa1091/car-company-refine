@@ -82,17 +82,21 @@ class BusinessHour extends Model
 
     /**
      * デフォルトの営業時間を返す（初期登録用）
+     *
+     * ✅ 仕様：
+     * - 年中無休
+     * - 開店 09:00 / 閉店
      */
     public static function defaultHours(): array
     {
         return [
-            ['day_of_week' => '月', 'open_time' => '09:00', 'close_time' => '17:00', 'is_closed' => false],
-            ['day_of_week' => '火', 'open_time' => '09:00', 'close_time' => '17:00', 'is_closed' => false],
-            ['day_of_week' => '水', 'open_time' => '09:00', 'close_time' => '17:00', 'is_closed' => false],
-            ['day_of_week' => '木', 'open_time' => '09:00', 'close_time' => '17:00', 'is_closed' => false],
-            ['day_of_week' => '金', 'open_time' => '09:00', 'close_time' => '17:00', 'is_closed' => false],
-            ['day_of_week' => '土', 'open_time' => '10:00', 'close_time' => '15:00', 'is_closed' => false],
-            ['day_of_week' => '日', 'open_time' => null, 'close_time' => null, 'is_closed' => true],
+            ['day_of_week' => '月', 'open_time' => '09:00', 'close_time' => '23:55', 'is_closed' => false],
+            ['day_of_week' => '火', 'open_time' => '09:00', 'close_time' => '23:55', 'is_closed' => false],
+            ['day_of_week' => '水', 'open_time' => '09:00', 'close_time' => '23:55', 'is_closed' => false],
+            ['day_of_week' => '木', 'open_time' => '09:00', 'close_time' => '23:55', 'is_closed' => false],
+            ['day_of_week' => '金', 'open_time' => '09:00', 'close_time' => '23:55', 'is_closed' => false],
+            ['day_of_week' => '土', 'open_time' => '09:00', 'close_time' => '23:55', 'is_closed' => false],
+            ['day_of_week' => '日', 'open_time' => '09:00', 'close_time' => '23:55', 'is_closed' => false],
         ];
     }
 

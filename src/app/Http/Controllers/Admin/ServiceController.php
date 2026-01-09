@@ -99,6 +99,7 @@ class ServiceController extends Controller
                 'features.*' => 'string|max:255',
             ],
             [
+                'name.unique' => 'このメニュー名は既に登録されています。',
                 'image.max' => '画像は200KB以下にしてください。',
             ]
         );

@@ -21,9 +21,13 @@ export default function ServiceForm({
     const { data, setData, processing } = useForm({
         name: service?.name || "",
         description: service?.description || "",
-        price: service?.price || "",
 
-        // ✅ 追加：価格テキスト（任意）
+        // ✅ 方法A：画面には出さないが、必須バリデーションに通すためデフォルト値を持たせる
+        // - 新規作成時: 0（必須回避）
+        // - 編集時: 既存値を保持
+        price: service?.price ?? 0,
+
+        // ✅ 方法A：非表示だが、送信は維持（任意）
         price_text: service?.price_text || "",
 
         duration_minutes: service?.duration_minutes || "",
@@ -43,6 +47,9 @@ export default function ServiceForm({
     // ✅ 画像サイズエラー（クライアント側）
     const [imageError, setImageError] = useState("");
 
+    // ✅ 追加：クライアント側バリデーション errors（項目下に出す）
+    const [clientErrors, setClientErrors] = useState({});
+
     // ✅ props 側の categories が更新されたら state も更新（InertiaのPOST/リダイレクト後の差分反映）
     useEffect(() => {
         setCategories(Array.isArray(initialCategories) ? initialCategories : []);
@@ -60,6 +67,14 @@ export default function ServiceForm({
 
         setData("category_id", newCategory.id);
         setShowModal(false);
+
+        // ✅ 追加：該当エラーを消す
+        setClientErrors((prev) => {
+            if (!prev?.category_id) return prev;
+            const next = { ...prev };
+            delete next.category_id;
+            return next;
+        });
     };
 
     // ✅ もし flash.category が共有される構成なら、親側でも拾って確実に反映＆モーダルを閉じる
@@ -69,13 +84,41 @@ export default function ServiceForm({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [flashCategory?.id]);
 
+    /** ✅ 追加：エラー取得（client > server の優先） */
+    const getError = (field) => {
+        const ce = clientErrors?.[field];
+        if (ce) return String(ce);
+
+        const se = errors?.[field];
+        if (Array.isArray(se) && se.length > 0) return String(se[0]);
+        if (typeof se === "string" && se) return se;
+
+        return "";
+    };
+
+    /** ✅ 追加：特定フィールドの client error を消す */
+    const clearClientError = (field) => {
+        setClientErrors((prev) => {
+            if (!prev || !prev[field]) return prev;
+            const next = { ...prev };
+            delete next[field];
+            return next;
+        });
+    };
+
     /** ✅ 入力変更 */
     const handleChange = (e) => {
         const { name, type, checked, files, value } = e.target;
 
+        // 入力した項目の client error は即消す
+        clearClientError(name);
+
         if (type === "checkbox") {
             setData(name, checked);
-        } else if (type === "file") {
+            return;
+        }
+
+        if (type === "file") {
             const file = files?.[0] ?? null;
 
             // ✅ 画像だけ 200KB 制限（他の file input が増えても壊さない）
@@ -93,20 +136,33 @@ export default function ServiceForm({
 
                     // 同じファイルを選び直せるようにリセット
                     e.target.value = "";
+
+                    // ✅ 追加：image も client error として扱うならここで入れる
+                    setClientErrors((prev) => ({
+                        ...prev,
+                        image: "画像は200KB以下のファイルを選択してください。",
+                    }));
                     return;
                 }
 
                 // OK
                 setImageError("");
+                setClientErrors((prev) => {
+                    if (!prev?.image) return prev;
+                    const next = { ...prev };
+                    delete next.image;
+                    return next;
+                });
                 setData(name, file);
                 return;
             }
 
             // 画像以外（現状は無いが既存仕様を壊さない）
             setData(name, file);
-        } else {
-            setData(name, value);
+            return;
         }
+
+        setData(name, value);
     };
 
     /** ✅ 特徴追加（Enterキー） */
@@ -119,6 +175,7 @@ export default function ServiceForm({
 
             if (trimmed && !data.features.includes(trimmed)) {
                 setData("features", [...data.features, trimmed]);
+                clearClientError("features");
             }
             setFeatureInput("");
         }
@@ -134,13 +191,73 @@ export default function ServiceForm({
 
     const sortedCategories = useMemo(() => {
         const list = Array.isArray(categories) ? categories : [];
-        // 既存仕様を壊さないため「そのまま」でもOKだが、見やすいように id 昇順に揃えるならここで
+        // 既存仕様を壊さないため「そのまま」でもOK
         return list;
     }, [categories]);
+
+    /** ✅ 追加：クライアント側バリデーション（noValidate 前提） */
+    const validate = () => {
+        const errs = {};
+
+        const name = String(data.name || "").trim();
+        const categoryId = String(data.category_id || "").trim();
+
+        const durationRaw = data.duration_minutes;
+        const duration = Number(durationRaw);
+
+        const sortOrderRaw = data.sort_order;
+        const sortOrder = Number(sortOrderRaw);
+
+        if (!name) {
+            errs.name = "メニュー名は必須です。";
+        } else if (name.length > 255) {
+            errs.name = "メニュー名は255文字以内で入力してください。";
+        }
+
+        if (!categoryId) {
+            errs.category_id = "カテゴリーを選択してください。";
+        }
+
+        // 説明は任意だが、長すぎるのを防ぎたい場合（必要なら調整）
+        if (data.description != null) {
+            const desc = String(data.description);
+            if (desc.length > 2000) {
+                errs.description = "説明は2000文字以内で入力してください。";
+            }
+        }
+
+        if (!Number.isFinite(duration) || duration <= 0) {
+            errs.duration_minutes = "所要時間は必須です。1以上の数値で入力してください。";
+        } else if (duration < 1 || duration > 480) {
+            errs.duration_minutes = "所要時間は1〜480の範囲で入力してください。";
+        } else if (!Number.isInteger(duration)) {
+            errs.duration_minutes = "所要時間は整数で入力してください。";
+        }
+
+        // sort_order は任意だが、不正値は弾く
+        if (sortOrderRaw !== "" && sortOrderRaw !== null && sortOrderRaw !== undefined) {
+            if (!Number.isFinite(sortOrder) || sortOrder < 0) {
+                errs.sort_order = "表示順序は0以上の数値で入力してください。";
+            } else if (!Number.isInteger(sortOrder)) {
+                errs.sort_order = "表示順序は整数で入力してください。";
+            }
+        }
+
+        if (imageError) {
+            errs.image = imageError;
+        }
+
+        return errs;
+    };
 
     /** ✅ 保存処理 */
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        // ✅ noValidate なので送信前にフロント検証
+        const errs = validate();
+        setClientErrors(errs);
+        if (Object.keys(errs).length > 0) return;
 
         const formData = new FormData();
 
@@ -191,10 +308,20 @@ export default function ServiceForm({
                     onSubmit={handleSubmit}
                     className="service-form"
                     encType="multipart/form-data"
+                    noValidate
                 >
+                    {/* ✅ 方法A：price / price_text は画面非表示だが送信は維持（必須対策） */}
+                    <input type="hidden" name="price" value={data.price} readOnly />
+                    <input
+                        type="hidden"
+                        name="price_text"
+                        value={data.price_text}
+                        readOnly
+                    />
+
                     {/* 名前 */}
                     <div className="service-form-field">
-                        <label className="service-form-label">名前</label>
+                        <label className="service-form-label">メニュー名</label>
                         <input
                             type="text"
                             name="name"
@@ -203,10 +330,8 @@ export default function ServiceForm({
                             className="service-form-input"
                             required
                         />
-                        {errors?.name && (
-                            <div className="service-form-error">
-                                {errors.name}
-                            </div>
+                        {!!getError("name") && (
+                            <div className="service-form-error">{getError("name")}</div>
                         )}
                     </div>
 
@@ -238,10 +363,8 @@ export default function ServiceForm({
                                 ＋新規作成
                             </button>
                         </div>
-                        {errors?.category_id && (
-                            <div className="service-form-error">
-                                {errors.category_id}
-                            </div>
+                        {!!getError("category_id") && (
+                            <div className="service-form-error">{getError("category_id")}</div>
                         )}
                     </div>
 
@@ -255,55 +378,14 @@ export default function ServiceForm({
                             className="service-form-textarea"
                             rows="4"
                         />
-                        {errors?.description && (
-                            <div className="service-form-error">
-                                {errors.description}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* 価格 */}
-                    <div className="service-form-field">
-                        <label className="service-form-label">価格 (円)</label>
-                        <input
-                            type="text"
-                            name="price"
-                            value={data.price}
-                            onChange={handleChange}
-                            className="service-form-input"
-                            inputMode="text"
-                        />
-                        {errors?.price && (
-                            <div className="service-form-error">
-                                {errors.price}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* ✅ 追加：価格テキスト（任意） */}
-                    <div className="service-form-field">
-                        <label className="service-form-label">価格テキスト（任意）</label>
-                        <input
-                            type="text"
-                            name="price_text"
-                            value={data.price_text}
-                            onChange={handleChange}
-                            className="service-form-input"
-                            placeholder="例：10,000円 / 要相談 / キャンペーン中 など"
-                            maxLength={255}
-                        />
-                        {errors?.price_text && (
-                            <div className="service-form-error">
-                                {errors.price_text}
-                            </div>
+                        {!!getError("description") && (
+                            <div className="service-form-error">{getError("description")}</div>
                         )}
                     </div>
 
                     {/* 所要時間 */}
                     <div className="service-form-field">
-                        <label className="service-form-label">
-                            所要時間 (分)
-                        </label>
+                        <label className="service-form-label">所要時間 (分)</label>
                         <input
                             type="number"
                             name="duration_minutes"
@@ -314,10 +396,8 @@ export default function ServiceForm({
                             max="480"
                             required
                         />
-                        {errors?.duration_minutes && (
-                            <div className="service-form-error">
-                                {errors.duration_minutes}
-                            </div>
+                        {!!getError("duration_minutes") && (
+                            <div className="service-form-error">{getError("duration_minutes")}</div>
                         )}
                     </div>
 
@@ -332,10 +412,8 @@ export default function ServiceForm({
                             className="service-form-input"
                             min="0"
                         />
-                        {errors?.sort_order && (
-                            <div className="service-form-error">
-                                {errors.sort_order}
-                            </div>
+                        {!!getError("sort_order") && (
+                            <div className="service-form-error">{getError("sort_order")}</div>
                         )}
                     </div>
 
@@ -381,10 +459,7 @@ export default function ServiceForm({
                         />
                         <div className="service-features-container">
                             {data.features.map((f, idx) => (
-                                <span
-                                    key={`${f}-${idx}`}
-                                    className="service-feature-chip"
-                                >
+                                <span key={`${f}-${idx}`} className="service-feature-chip">
                                     {f}
                                     <button
                                         type="button"
@@ -396,18 +471,14 @@ export default function ServiceForm({
                                 </span>
                             ))}
                         </div>
-                        {errors?.features && (
-                            <div className="service-form-error">
-                                {errors.features}
-                            </div>
+                        {!!getError("features") && (
+                            <div className="service-form-error">{getError("features")}</div>
                         )}
                     </div>
 
                     {/* 画像 */}
                     <div className="service-form-field">
-                        <label className="service-form-label">
-                            画像アップロード
-                        </label>
+                        <label className="service-form-label">画像アップロード</label>
                         <input
                             type="file"
                             name="image"
@@ -416,7 +487,6 @@ export default function ServiceForm({
                             accept="image/*"
                         />
 
-                        {/* ✅ 追加：注意文言 */}
                         <div
                             style={{
                                 marginTop: "6px",
@@ -431,9 +501,7 @@ export default function ServiceForm({
 
                         {/* ✅ クライアント側（200KB超） */}
                         {imageError && (
-                            <div className="service-form-error">
-                                {imageError}
-                            </div>
+                            <div className="service-form-error">{imageError}</div>
                         )}
 
                         {service?.image_url && (
@@ -445,10 +513,8 @@ export default function ServiceForm({
                         )}
 
                         {/* ✅ サーバ側（Laravel） */}
-                        {errors?.image && (
-                            <div className="service-form-error">
-                                {errors.image}
-                            </div>
+                        {!!getError("image") && (
+                            <div className="service-form-error">{getError("image")}</div>
                         )}
                     </div>
 

@@ -100,7 +100,6 @@ export default function ServiceIndex() {
                                 <th>ID</th>
                                 <th>名前</th>
                                 <th>コース</th>
-                                <th>価格</th>
                                 <th>所要時間</th>
                                 <th>特徴</th>
                                 <th>人気</th>
@@ -114,7 +113,6 @@ export default function ServiceIndex() {
                                     <td>{service.id}</td>
                                     <td>{service.name}</td>
                                     <td>{service.category || "-"}</td>
-                                    <td>¥{service.price}</td>
                                     <td>{service.duration_minutes}分</td>
                                     <td>
                                         {service.features &&

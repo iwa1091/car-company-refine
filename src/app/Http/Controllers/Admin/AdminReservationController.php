@@ -31,6 +31,13 @@ class AdminReservationController extends Controller
                 'end_time'      => $r->end_time,
                 'name'          => $r->name,
                 'email'         => $r->email,
+
+                // ✅ 追加：管理画面一覧で使う項目（- 表示の原因だった）
+                'phone'         => $r->phone,
+                'maker'         => $r->maker,
+                'car_model'     => $r->car_model,
+                'course'        => $r->course,
+
                 'status'        => $r->status,
                 'notes'         => $r->notes,
                 'service_name'  => $r->service?->name,
@@ -63,6 +70,13 @@ class AdminReservationController extends Controller
                 'end_time'      => $r->end_time,
                 'name'          => $r->name,
                 'email'         => $r->email,
+
+                // ✅ 追加：ReservationList.jsx が表示している項目（ここが欠けていた）
+                'phone'         => $r->phone,
+                'maker'         => $r->maker,
+                'car_model'     => $r->car_model,
+                'course'        => $r->course,
+
                 'status'        => $r->status,
                 'notes'         => $r->notes,
                 'service_name'  => $r->service?->name,
@@ -130,6 +144,12 @@ class AdminReservationController extends Controller
                 'email'        => $reservation->email,
                 'status'       => $reservation->status,
                 'notes'        => $reservation->notes,
+
+                // ✅ 追加：編集画面でも必要になる可能性があるので保持（不一致防止・害なし）
+                'phone'        => $reservation->phone,
+                'maker'        => $reservation->maker,
+                'car_model'    => $reservation->car_model,
+                'course'       => $reservation->course,
 
                 // サービス関連
                 'service_id'   => $reservation->service_id,

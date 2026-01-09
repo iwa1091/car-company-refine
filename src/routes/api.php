@@ -36,6 +36,8 @@ Route::prefix('business-hours')->group(function () {
 
 use App\Http\Controllers\Admin\AdminReservationController;
 use App\Http\Controllers\Admin\ServiceController;
+// ✅ Schedule モデルが存在しない環境でも落ちないように、Schedule系は Api\AdminController に寄せる
+use App\Http\Controllers\Api\AdminController as ApiAdminController;
 
 Route::prefix('admin')->group(function () {
 
@@ -48,6 +50,13 @@ Route::prefix('admin')->group(function () {
     // 予約一覧/削除 API（ReservationList.jsx が使用）
     Route::get('reservations', [AdminReservationController::class, 'apiIndex']);
     Route::delete('reservations/{id}', [AdminReservationController::class, 'apiDestroy']);
+
+    // ✅ スケジュール管理 API（Scheduleモデルを使わない実装に合わせる）
+    // ※ ルートパラメータ名 {schedule} は従来の形のままでも、Controller側が型ヒント無しなのでモデルバインドされません
+    Route::get('schedules', [ApiAdminController::class, 'indexSchedules']);
+    Route::post('schedules', [ApiAdminController::class, 'storeSchedule']);
+    Route::put('schedules/{schedule}', [ApiAdminController::class, 'updateSchedule']);
+    Route::delete('schedules/{schedule}', [ApiAdminController::class, 'destroySchedule']);
 });
 
 
@@ -55,9 +64,7 @@ Route::prefix('admin')->group(function () {
 // 🧾 一般ユーザー向け API（予約フォーム用）
 // ============================================================
 
-
 use App\Http\Controllers\Api\ReservationController as ApiReservationController;
-
 
 Route::get('/reservations/month-schedule', [ApiReservationController::class, 'monthSchedule']);
 
