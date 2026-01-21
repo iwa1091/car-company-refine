@@ -1,0 +1,161 @@
+/* =========================================================
+   app-shell.css — Car company theme (Dark + Blue accent)
+   既存のクラス/変数を壊さず、全体のベースを車LP寄りに統一
+========================================================= */
+
+/* ---------------------------------------------------------
+  Theme Variables
+  ✅ 変数の定義は styles/base/theme.css に集約する。
+  このファイルでは :root での変数再定義を行わず、
+  既存CSSからは var(...) で参照するだけにする。
+--------------------------------------------------------- */
+
+/* ---------------------------------------------------------
+  Base
+--------------------------------------------------------- */
+html,
+body {
+    height: 100%;
+}
+
+body {
+    font-family: var(--font-base);
+    color: var(--text-default);
+    line-height: 1.7;
+    margin: 0;
+    padding: 0;
+    background-color: var(--color-bg-base);
+    /* 背景に深いグラデ + ほんのりハイライト */
+    background-image:
+        radial-gradient(1200px 600px at 10% -10%, rgba(43, 124, 255, 0.20), transparent 60%),
+        radial-gradient(900px 520px at 90% 10%, rgba(0, 194, 255, 0.12), transparent 62%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.00));
+    background-repeat: no-repeat;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    line-height: 1.25;
+    margin: 0 0 0.6rem;
+}
+
+p {
+    margin: 0 0 1rem;
+    color: var(--text-default);
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* ---------------------------------------------------------
+  Links
+--------------------------------------------------------- */
+a {
+    text-decoration: none;
+    color: var(--color-accent);
+    transition: color 0.2s ease-in-out, opacity 0.2s ease-in-out;
+}
+
+a:hover {
+    color: var(--color-accent-2);
+    opacity: 0.95;
+}
+
+/* ---------------------------------------------------------
+  Layout Utilities
+--------------------------------------------------------- */
+.container {
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+/* ---------------------------------------------------------
+  Buttons (共通)
+  ※ menu_price.blade の "button-primary" をここで担保
+--------------------------------------------------------- */
+.button,
+.button-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.85rem 1.2rem;
+    border-radius: 12px;
+    font-weight: 700;
+    font-family: var(--font-ui);
+    text-align: center;
+    border: 1px solid var(--car-border);
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.button-primary {
+    color: #fff;
+    background: linear-gradient(90deg, rgba(43, 124, 255, 1), rgba(0, 194, 255, 0.95));
+    border-color: rgba(43, 124, 255, 0.35);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.30);
+}
+
+.button-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.40);
+    border-color: rgba(0, 194, 255, 0.55);
+}
+
+.button:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--car-shadow-soft);
+}
+
+/* ---------------------------------------------------------
+  Utility classes (既存互換)
+--------------------------------------------------------- */
+.text-center {
+    text-align: center;
+}
+
+.mx-auto {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.mb-4 {
+    margin-bottom: 1rem;
+}
+
+.py-8 {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+.px-4 {
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+.text-white {
+    color: #fff;
+}
+
+/* legacy names kept */
+.bg-salon-brown {
+    background-color: var(--car-bg-2);
+}
+
+.text-salon-gold {
+    color: var(--color-accent);
+}

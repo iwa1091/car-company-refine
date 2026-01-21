@@ -1,0 +1,351 @@
+/* /resources/css/pages/admin/login/login.css
+   Admin Login Page (Car LP style: dark + blue accent)
+===================================================== */
+
+.admin-login {
+    position: relative;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 3.5rem 1rem;
+}
+
+/* 背景演出（LPっぽい深いグラデ + 光） */
+.admin-login__bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(900px 520px at 18% 8%, rgba(43, 124, 255, 0.22), transparent 62%),
+        radial-gradient(820px 520px at 88% 12%, rgba(0, 194, 255, 0.14), transparent 64%),
+        radial-gradient(700px 420px at 50% 95%, rgba(255, 255, 255, 0.05), transparent 60%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.00));
+}
+
+.admin-login__bg::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: 0.14;
+    background-image:
+        linear-gradient(to right, rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(500px 380px at 50% 50%, rgba(0, 0, 0, 1), transparent 70%);
+}
+
+.admin-login__card {
+    position: relative;
+    width: min(520px, 100%);
+    border-radius: var(--car-radius-lg, 18px);
+    border: 1px solid var(--car-border, rgba(255, 255, 255, 0.14));
+    background: linear-gradient(180deg,
+            rgba(255, 255, 255, 0.10),
+            rgba(255, 255, 255, 0.06));
+    box-shadow: var(--car-shadow-strong, 0 16px 44px rgba(0, 0, 0, 0.45));
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 2.1rem 1.8rem 1.6rem;
+}
+
+.admin-login__card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background: radial-gradient(700px 260px at 15% 0%,
+            rgba(43, 124, 255, 0.18),
+            transparent 60%);
+    opacity: 0.9;
+}
+
+.admin-login__head {
+    position: relative;
+    margin-bottom: 1.4rem;
+}
+
+.admin-login__badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 26px;
+    padding: 0 0.75rem;
+    border-radius: var(--car-radius-full, 9999px);
+    font-family: var(--font-ui, system-ui);
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(43, 124, 255, 0.35);
+    background: rgba(43, 124, 255, 0.16);
+    margin-bottom: 0.7rem;
+}
+
+.admin-login__title {
+    margin: 0 0 0.35rem;
+    font-size: 1.8rem;
+    line-height: 1.2;
+    color: var(--text-default, #eaf1ff);
+    font-weight: 800;
+    letter-spacing: 0.02em;
+}
+
+.admin-login__subtitle {
+    margin: 0;
+    color: var(--text-muted, rgba(234, 241, 255, 0.72));
+    font-size: 0.95rem;
+}
+
+.admin-login__alert {
+    position: relative;
+    border-radius: 12px;
+    padding: 0.9rem 1rem;
+    margin: 1rem 0 1.2rem;
+    border: 1px solid var(--car-border, rgba(255, 255, 255, 0.14));
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.admin-login__alert--info {
+    border-color: rgba(0, 194, 255, 0.28);
+    background: rgba(0, 194, 255, 0.10);
+}
+
+.admin-login__alert--error {
+    border-color: rgba(255, 90, 107, 0.35);
+    background: rgba(255, 90, 107, 0.10);
+}
+
+.admin-login__alert-title {
+    margin: 0 0 0.4rem;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.92);
+}
+
+.admin-login__alert-list {
+    margin: 0;
+    padding-left: 1.2rem;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.admin-login__form {
+    position: relative;
+    display: grid;
+    gap: 1rem;
+}
+
+.admin-login__field {
+    display: grid;
+    gap: 0.45rem;
+}
+
+.admin-login__label {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.88);
+}
+
+.admin-login__input {
+    width: 100%;
+    height: 46px;
+    border-radius: 12px;
+    border: 1px solid var(--car-border, rgba(255, 255, 255, 0.14));
+    background: rgba(10, 14, 26, 0.35);
+    color: rgba(255, 255, 255, 0.92);
+    padding: 0 0.95rem;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+
+    /* ✅ 枠からはみ出し防止（width 100% + padding 対策） */
+    box-sizing: border-box;
+    max-width: 100%;
+}
+
+.admin-login__input::placeholder {
+    color: rgba(234, 241, 255, 0.55);
+}
+
+.admin-login__input:focus {
+    border-color: rgba(0, 194, 255, 0.55);
+    box-shadow:
+        0 0 0 4px rgba(0, 194, 255, 0.16),
+        0 12px 26px rgba(0, 0, 0, 0.35);
+    transform: translateY(-1px);
+}
+
+.admin-login__input.is-invalid {
+    border-color: rgba(255, 90, 107, 0.55);
+    box-shadow: 0 0 0 4px rgba(255, 90, 107, 0.14);
+}
+
+.admin-login__error {
+    margin: 0.15rem 0 0;
+    color: rgba(255, 170, 178, 0.95);
+    font-size: 0.88rem;
+    font-weight: 700;
+}
+
+.admin-login__button {
+    width: 100%;
+    height: 48px;
+    margin-top: 0.2rem;
+    border-radius: 12px;
+    font-weight: 900;
+    font-family: var(--font-ui, system-ui);
+    letter-spacing: 0.03em;
+    color: #fff;
+    border: 1px solid rgba(43, 124, 255, 0.35);
+    background: linear-gradient(90deg, rgba(43, 124, 255, 1), rgba(0, 194, 255, 0.95));
+    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.35);
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+
+    /* ✅ 枠からはみ出し防止 */
+    box-sizing: border-box;
+    max-width: 100%;
+}
+
+.admin-login__button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.45);
+    filter: saturate(1.05);
+}
+
+.admin-login__button:active {
+    transform: translateY(0);
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.38);
+}
+
+.admin-login__foot {
+    position: relative;
+    margin-top: 1.2rem;
+    text-align: center;
+}
+
+.admin-login__hint {
+    margin: 0;
+    color: var(--text-muted, rgba(234, 241, 255, 0.72));
+    font-size: 0.92rem;
+}
+
+.admin-login__link {
+    color: var(--color-accent, #2b7cff);
+    font-weight: 900;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(43, 124, 255, 0.45);
+    transition: color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+}
+
+.admin-login__link:hover {
+    color: var(--color-accent-2, #00c2ff);
+    border-color: rgba(0, 194, 255, 0.6);
+    opacity: 0.95;
+}
+
+/* ============================================
+   Responsive（指定：スマホ〜640 / タブレット 641〜1024 / PC 1025〜）
+============================================ */
+
+/* スマホ（〜640px） */
+@media (max-width: 640px) {
+    .admin-login {
+        padding: 2.4rem 0.9rem;
+    }
+
+    .admin-login__card {
+        padding: 1.6rem 1.15rem 1.25rem;
+        border-radius: 16px;
+    }
+
+    .admin-login__title {
+        font-size: 1.55rem;
+    }
+
+    .admin-login__subtitle {
+        font-size: 0.92rem;
+    }
+
+    .admin-login__input {
+        height: 44px;
+        padding: 0 0.85rem;
+        border-radius: 12px;
+    }
+
+    .admin-login__button {
+        height: 46px;
+        border-radius: 12px;
+    }
+}
+
+/* iPhone SE（幅 375px 対応） */
+@media (max-width: 375px) {
+    .admin-login {
+        padding: 2.1rem 0.75rem;
+    }
+
+    .admin-login__card {
+        padding: 1.35rem 0.95rem 1.1rem;
+        border-radius: 14px;
+    }
+
+    .admin-login__badge {
+        height: 24px;
+        font-size: 0.74rem;
+        padding: 0 0.65rem;
+    }
+
+    .admin-login__title {
+        font-size: 1.42rem;
+    }
+
+    .admin-login__subtitle {
+        font-size: 0.9rem;
+    }
+
+    .admin-login__label {
+        font-size: 0.9rem;
+    }
+
+    .admin-login__error {
+        font-size: 0.85rem;
+    }
+}
+
+/* タブレット（641px〜1024px） */
+@media (min-width: 641px) and (max-width: 1024px) {
+    .admin-login {
+        padding: 3.2rem 1.2rem;
+    }
+
+    .admin-login__card {
+        padding: 2rem 1.6rem 1.45rem;
+    }
+
+    .admin-login__title {
+        font-size: 1.75rem;
+    }
+}
+
+/* PC（1025px〜） */
+@media (min-width: 1025px) {
+    .admin-login {
+        padding: 3.8rem 1.5rem;
+    }
+
+    .admin-login__card {
+        padding: 2.2rem 1.85rem 1.6rem;
+    }
+
+    .admin-login__title {
+        font-size: 1.85rem;
+    }
+}
+
+/* Motion safety */
+@media (prefers-reduced-motion: reduce) {
+
+    .admin-login__input,
+    .admin-login__button {
+        transition: none;
+    }
+}

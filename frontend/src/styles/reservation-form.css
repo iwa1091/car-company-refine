@@ -1,0 +1,472 @@
+/* /resources/css/pages/reservation/reservation-form.css */
+/* =====================================================
+   Reservation Form — Car theme version (User Side)
+   ダーク背景 + ガラスカード + ブルーアクセント
+   ※ 既存 JSX の class 名は変更しない（不一致防止）
+===================================================== */
+
+/* ------------------------------
+   ページ全体（背景をページ全体に敷く）
+------------------------------ */
+.reservation-main {
+    position: relative;
+    z-index: 0;
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 4.2rem 1.4rem 3.2rem;
+    color: var(--text-default, #e5e7eb);
+    font-family: var(--font-base, system-ui, -apple-system, "Segoe UI", sans-serif);
+}
+
+.reservation-main::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background:
+        radial-gradient(900px 520px at 15% 0%, rgba(43, 124, 255, 0.18), transparent 60%),
+        radial-gradient(800px 460px at 90% 10%, rgba(0, 194, 255, 0.10), transparent 65%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.00));
+}
+
+/* ------------------------------
+   戻るボタン
+------------------------------ */
+.reservation-back {
+    margin-bottom: 1rem;
+}
+
+.reservation-back-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.55rem 0.95rem;
+    font-size: 0.92rem;
+    border-radius: 9999px;
+
+    color: var(--text-default, #e5e7eb);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    backdrop-filter: blur(10px);
+
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.reservation-back-button:hover {
+    transform: translateY(-1px);
+    border-color: rgba(0, 194, 255, 0.40);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+}
+
+/* ------------------------------
+   タイトル
+------------------------------ */
+.reservation-title {
+    font-size: 1.75rem;
+    letter-spacing: 0.02em;
+    text-align: left;
+    margin: 0 0 1.4rem;
+    color: var(--text-default, #e5e7eb);
+}
+
+.reservation-title::after {
+    content: "";
+    display: block;
+    margin-top: 0.65rem;
+    width: 56px;
+    height: 2px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--color-accent, #2b7cff), var(--color-accent-2, #00c2ff));
+    opacity: 0.9;
+}
+
+/* ------------------------------
+   メッセージ
+------------------------------ */
+.reservation-message {
+    margin: 0 0 1rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.reservation-message--success {
+    color: rgba(52, 211, 153, 0.95);
+}
+
+.reservation-message--error {
+    color: rgba(248, 113, 113, 0.95);
+}
+
+/* ------------------------------
+   フォーム本体（ガラスカード）
+------------------------------ */
+.reservation-form-card {
+    position: relative;
+    border-radius: var(--radius-base, 14px);
+    padding: 1.6rem 1.6rem 1.75rem;
+
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.42);
+    backdrop-filter: blur(12px);
+    overflow: hidden;
+}
+
+.reservation-form-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(520px 260px at 20% 0%, rgba(43, 124, 255, 0.12), transparent 55%);
+    opacity: 0.9;
+}
+
+/* ------------------------------
+   フィールド
+------------------------------ */
+.reservation-field {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 1.15rem;
+}
+
+.reservation-label {
+    display: block;
+    font-size: 0.92rem;
+    font-weight: 800;
+    color: var(--text-default, #e5e7eb);
+    margin-bottom: 0.45rem;
+    letter-spacing: 0.01em;
+}
+
+/* 入力共通 */
+.reservation-input,
+.reservation-select,
+.reservation-textarea {
+    width: 100%;
+    box-sizing: border-box;
+
+    border-radius: 12px;
+    padding: 0.72rem 0.85rem;
+    font-family: var(--font-base, system-ui, -apple-system, "Segoe UI", sans-serif);
+    font-size: 0.95rem;
+
+    color: rgba(255, 255, 255, 0.92);
+    background: rgba(0, 0, 0, 0.28);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+
+    outline: none;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.reservation-select {
+    appearance: none;
+    background-image:
+        linear-gradient(45deg, transparent 50%, rgba(255, 255, 255, 0.65) 50%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.65) 50%, transparent 50%);
+    background-position:
+        calc(100% - 18px) calc(50% - 2px),
+        calc(100% - 12px) calc(50% - 2px);
+    background-size: 6px 6px, 6px 6px;
+    background-repeat: no-repeat;
+    padding-right: 2.2rem;
+}
+
+.reservation-textarea {
+    min-height: 110px;
+    resize: vertical;
+}
+
+.reservation-input::placeholder,
+.reservation-textarea::placeholder {
+    color: rgba(255, 255, 255, 0.55);
+}
+
+.reservation-input:focus,
+.reservation-select:focus,
+.reservation-textarea:focus {
+    border-color: rgba(0, 194, 255, 0.55);
+    box-shadow: 0 0 0 3px rgba(0, 194, 255, 0.18);
+    background: rgba(0, 0, 0, 0.34);
+}
+
+/* ------------------------------
+   カレンダー
+------------------------------ */
+.reservation-calendar-wrapper {
+    margin-top: 0.35rem;
+}
+
+.reservation-calendar {
+    border-radius: var(--radius-base, 14px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.04);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(10px);
+}
+
+.reservation-calendar .react-calendar {
+    border: none;
+    width: 100%;
+    font-family: var(--font-base, system-ui, -apple-system, "Segoe UI", sans-serif);
+    background: transparent;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* ナビ */
+.reservation-calendar .react-calendar__navigation {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.5rem 0.6rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+/* 年月の文字色（中央のラベル） */
+.reservation-calendar .react-calendar__navigation__label {
+    color: var(--salon-brown);
+}
+
+.reservation-calendar .react-calendar__navigation button {
+    color: var(--salon-brown);
+    border-radius: 10px;
+}
+
+.reservation-calendar .react-calendar__navigation button:enabled:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+/* タイル */
+.reservation-calendar .react-calendar__tile {
+    border-radius: 0px;
+}
+
+.reservation-calendar .react-calendar__tile:enabled:hover {
+    background: rgba(43, 124, 255, 1);
+}
+
+.reservation-calendar .react-calendar__tile--now {
+    background: rgba(245, 247, 247, 0.1);
+}
+
+.reservation-calendar .react-calendar__tile--active {
+    background: linear-gradient(90deg, rgba(43, 124, 255, 1), rgba(0, 194, 255, 0.95));
+    color: #fff;
+}
+
+/* 選択日テキスト */
+.reservation-date-text {
+    margin-top: 0.55rem;
+    font-size: 0.88rem;
+    color: var(--text-muted, rgba(255, 255, 255, 0.72));
+}
+
+/* ------------------------------
+   時間枠
+------------------------------ */
+.reservation-time-wrapper {
+    margin-top: 0.35rem;
+}
+
+.reservation-time-note {
+    font-size: 0.88rem;
+    color: var(--salon-brown, rgba(255, 255, 255, 0.72));
+}
+
+.reservation-time-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(98px, 1fr));
+    gap: 0.55rem;
+    margin-top: 0.55rem;
+}
+
+/* ボタン（未選択） */
+.reservation-time-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+
+    padding: 0.55rem 0.5rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.05);
+
+    font-size: 0.92rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    color: var(--salon-brown);
+
+    cursor: pointer;
+    transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
+}
+
+/* 時間ボタン内の「残り1ブース」を折り返さない（オプションボタンには影響しない） */
+.reservation-time-button>div>div:last-child {
+    white-space: nowrap;
+    word-break: keep-all;
+    line-height: 1.1;
+    font-size: 0.72rem;
+    /* 文字がはみ出しにくいように少し小さめ */
+}
+
+.reservation-time-button:hover {
+    transform: translateY(-1px);
+    border-color: rgba(0, 194, 255, 0.40);
+    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.35);
+}
+
+/* 選択中 */
+.reservation-time-button--selected {
+    background: linear-gradient(90deg, rgba(43, 124, 255, 1), rgba(0, 194, 255, 0.95));
+    border-color: rgba(0, 194, 255, 0.55);
+    color: #fff;
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.42);
+}
+
+/* 選択された時間表示 */
+.reservation-selected-time {
+    margin-top: 0.6rem;
+    font-size: 0.88rem;
+    color: var(--text-muted, rgba(255, 255, 255, 0.72));
+}
+
+/* ------------------------------
+   送信ボタン
+------------------------------ */
+.reservation-submit-button {
+    position: relative;
+    z-index: 1;
+
+    width: 100%;
+    margin-top: 0.6rem;
+    padding: 0.95rem 1rem;
+    border-radius: 12px;
+    border: 1px solid rgba(43, 124, 255, 0.32);
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+
+    font-size: 0.98rem;
+    font-weight: 900;
+    letter-spacing: 0.02em;
+    font-family: var(--font-ui, var(--font-base, system-ui));
+
+    color: #fff;
+    background: linear-gradient(90deg, rgba(43, 124, 255, 1), rgba(0, 194, 255, 0.95));
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.42);
+
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, filter 0.18s ease;
+}
+
+.reservation-submit-button:hover {
+    transform: translateY(-2px);
+    border-color: rgba(0, 194, 255, 0.60);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.50);
+    filter: saturate(1.05);
+}
+
+.reservation-submit-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* ==============================
+   Calendar Weekdays (Sun/Mon...)
+============================== */
+.reservation-calendar .react-calendar__month-view__weekdays {
+    background: rgba(255, 255, 255, 0.04);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.reservation-calendar .react-calendar__month-view__weekdays__weekday {
+    padding: 0.6rem 0;
+    text-align: center;
+}
+
+.reservation-calendar .react-calendar__month-view__weekdays__weekday abbr {
+    text-decoration: none;
+    /* abbr の下線消し */
+    color: var(--salon-brown);
+    /* 通常曜日 */
+    font-weight: 800;
+    letter-spacing: 0.02em;
+}
+
+/* 日曜(7列目) */
+.reservation-calendar .react-calendar__month-view__weekdays__weekday:nth-child(7) abbr {
+    color: var(--car-danger, #ff5a6b);
+}
+
+/* 土曜(6列目) */
+.reservation-calendar .react-calendar__month-view__weekdays__weekday:nth-child(6) abbr {
+    color: var(--color-accent-2);
+}
+
+/* 例：入れ替え対象（ここを好きな色に） */
+.reservation-calendar .react-calendar__tile:enabled {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-default);
+}
+
+.reservation-calendar .react-calendar__tile:disabled {
+    background: rgba(255, 255, 255, 0.02);
+    color: rgba(234, 241, 255, 0.35);
+}
+
+/* 送信ボタン直前のメッセージ用（余白調整） */
+.reservation-message--near-submit {
+    margin: 0.2rem 0 0.7rem;
+    text-align: center;
+}
+
+/* 「必須」バッジ（最小追加） */
+.reservation-required {
+    display: inline-block;
+    margin-left: 0.5rem;
+    padding: 0.12rem 0.55rem;
+    border-radius: 9999px;
+
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.02em;
+    line-height: 1.2;
+
+    color: rgba(255, 255, 255, 0.92);
+    background: rgba(0, 194, 255, 0.14);
+    border: 1px solid rgba(0, 194, 255, 0.45);
+}
+
+
+
+/* ============================================
+   レスポンシブ
+============================================ */
+@media (max-width: 768px) {
+    .reservation-main {
+        padding: 3.6rem 1.1rem 2.8rem;
+    }
+
+    .reservation-form-card {
+        padding: 1.3rem 1.25rem 1.4rem;
+    }
+
+    .reservation-title {
+        font-size: 1.55rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .reservation-time-grid {
+        grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+
+        .reservation-time-button>div>div:last-child {
+            font-size: 0.68rem;
+        }
+    }
+}

@@ -122,7 +122,7 @@ optimize:
 
 fix-perms:
 	@$(PHP_EXEC_ROOT) bash -lc "cd $(APP_DIR) && \
-		mkdir -p storage bootstrap/cache && \
+		mkdir -p storage/framework/views storage/framework/cache storage/framework/sessions storage/logs bootstrap/cache && \
 		chown -R $(UID):$(GID) storage bootstrap/cache && \
 		chmod -R ug+rwX storage bootstrap/cache"
 

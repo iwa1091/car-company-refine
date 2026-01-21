@@ -1,0 +1,96 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\AdminBlock;
+use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+
+class AdminBlockController extends Controller
+{
+    public function store(Request $request)
+    {
+        $v = $request->validate([
+            'date' => ['required', 'date'],
+            'lane' => ['required', 'integer', 'min:1', 'max:3'],
+            'start_time' => ['required', 'date_format:H:i'],
+            'duration_minutes' => ['required', 'integer', 'min:15', 'max:600'],
+            'name' => ['nullable', 'string', 'max:255'],
+            'maker' => ['nullable', 'string', 'max:50'],
+            'car_model' => ['nullable', 'string', 'max:100'],
+            'course' => ['nullable', 'string', 'max:100'],
+            'menu' => ['nullable', 'string', 'max:255'],
+            'notes' => ['nullable', 'string'],
+        ]);
+
+        // ✅ 15分刻み前提（ズレ防止）
+        if ($v['duration_minutes'] % 15 !== 0) {
+            return response()->json(['message' => 'duration_minutes は15分刻みで指定してください'], 422);
+        }
+
+        $start = Carbon::createFromFormat('Y-m-d H:i', $v['date'].' '.$v['start_time']);
+        $end   = (clone $start)->addMinutes($v['duration_minutes']);
+
+        $block = AdminBlock::create([
+            'date' => $v['date'],
+            'lane' => $v['lane'],
+            'start_time' => $start->format('H:i:s'),
+            'end_time' => $end->format('H:i:s'),
+            'name' => $v['name'] ?? null,
+            'maker' => $v['maker'] ?? null,
+            'car_model' => $v['car_model'] ?? null,
+            'course' => $v['course'] ?? null,
+            'menu' => $v['menu'] ?? null,
+            'notes' => $v['notes'] ?? null,
+        ]);
+
+        return response()->json($block, 201);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $block = AdminBlock::findOrFail($id);
+
+        $v = $request->validate([
+            'lane' => ['required', 'integer', 'min:1', 'max:3'],
+            'start_time' => ['required', 'date_format:H:i'],
+            'duration_minutes' => ['required', 'integer', 'min:15', 'max:600'],
+            'name' => ['nullable', 'string', 'max:255'],
+            'maker' => ['nullable', 'string', 'max:50'],
+            'car_model' => ['nullable', 'string', 'max:100'],
+            'course' => ['nullable', 'string', 'max:100'],
+            'menu' => ['nullable', 'string', 'max:255'],
+            'notes' => ['nullable', 'string'],
+        ]);
+
+        if ($v['duration_minutes'] % 15 !== 0) {
+            return response()->json(['message' => 'duration_minutes は15分刻みで指定してください'], 422);
+        }
+
+        $start = Carbon::createFromFormat('Y-m-d H:i', $block->date->format('Y-m-d').' '.$v['start_time']);
+        $end   = (clone $start)->addMinutes($v['duration_minutes']);
+
+        $block->update([
+            'lane' => $v['lane'],
+            'start_time' => $start->format('H:i:s'),
+            'end_time' => $end->format('H:i:s'),
+            'name' => $v['name'] ?? null,
+            'maker' => $v['maker'] ?? null,
+            'car_model' => $v['car_model'] ?? null,
+            'course' => $v['course'] ?? null,
+            'menu' => $v['menu'] ?? null,
+            'notes' => $v['notes'] ?? null,
+        ]);
+
+        return response()->json($block);
+    }
+
+    public function destroy($id)
+    {
+        $block = AdminBlock::findOrFail($id);
+        $block->delete();
+
+        return response()->json(['message' => 'ブロックを削除しました']);
+    }
+}

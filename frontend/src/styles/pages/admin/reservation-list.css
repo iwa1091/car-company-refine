@@ -1,0 +1,633 @@
+/* /resources/css/pages/admin/reservation-list.css */
+/* =====================================================
+   Admin Reservation List
+   ※ base/theme.css / base/global.css のトークンを使用
+   ※ PC / Tablet / Mobile レスポンシブ対応（指定ブレークポイント）
+===================================================== */
+
+/* ページ全体 */
+.admin-reservation-page {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 1.5rem 1rem 2.5rem;
+}
+
+/* 読み込み中（ダークテーマでも見える色に） */
+.admin-reservation-loading {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--text-muted, rgba(234, 241, 255, 0.72));
+    font-size: 0.95rem;
+}
+
+/* 戻るボタン */
+.admin-reservation-back {
+    margin-bottom: 1rem;
+}
+
+/* ===== 予約カレンダー（ベース：全サイズ共通）===== */
+.admin-cal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.admin-cal-tabs {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.admin-cal-tab {
+    border: 1px solid var(--border-color);
+    background: var(--color-bg-soft);
+    color: var(--salon-brown);
+    padding: 0.4rem 0.9rem;
+    border-radius: 9999px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.admin-cal-tab.is-active {
+    background: var(--color-main);
+    color: #fff;
+    border-color: var(--color-main);
+}
+
+.admin-cal-note {
+    color: var(--text-muted, rgba(234, 241, 255, 0.72));
+    font-size: 0.85rem;
+}
+
+/* 「● は予約あり…」の先頭●だけを青系に */
+.admin-cal-note::first-letter {
+    color: var(--color-main);
+}
+
+.admin-cal-wrap {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-base);
+    box-shadow: var(--shadow-soft);
+    padding: 1rem;
+}
+
+.admin-cal-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-main);
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
+.admin-reservation-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.85rem;
+    border-radius: 9999px;
+    border: 1px solid var(--border-color);
+    background-color: var(--color-bg-soft);
+    color: var(--salon-brown);
+    text-decoration: none;
+    transition:
+        background-color 0.15s ease,
+        box-shadow 0.15s ease,
+        transform 0.1s ease;
+}
+
+.admin-reservation-back-link:hover {
+    background-color: var(--color-bg-light);
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-1px);
+}
+
+/* タイトル */
+.admin-reservation-title {
+    font-family: var(--font-heading);
+    font-size: 1.3rem;
+    color: var(--salon-brown);
+    margin-bottom: 1.25rem;
+}
+
+/* テーブルラッパー */
+.admin-reservation-table-wrapper {
+    background-color: var(--card-bg);
+    border-radius: var(--radius-base);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-soft);
+
+    /* ✅ 変更：列数が多いので全サイズで横スクロールを許可（文字崩れ・潰れ対策） */
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* テーブル */
+.admin-reservation-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+
+    /* ✅ 追加：列が潰れて崩れるのを防ぐ（必要なら横スクロールで見る） */
+    min-width: 860px;
+}
+
+.admin-reservation-table thead {
+    background-color: var(--color-bg-soft);
+}
+
+.admin-reservation-table th,
+.admin-reservation-table td {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+    text-align: left;
+    vertical-align: middle;
+}
+
+.admin-reservation-table th {
+    font-weight: 600;
+    color: var(--salon-brown);
+    white-space: nowrap;
+}
+
+/* ✅ 追加：一覧行の文字折り返しで崩れないように（詳細行は下で戻す） */
+.admin-reservation-table td.admin-reservation-cell {
+    white-space: nowrap;
+}
+
+/* ✅ 追加：詳細行（colspanのセル）は折り返しを許可 */
+.admin-reservation-table td.admin-reservation-cell[colspan] {
+    white-space: normal;
+}
+
+.admin-reservation-row:nth-child(even) {
+    background-color: var(--color-bg-light);
+}
+
+/* hover（ダークでも見えるように少しだけアクセント） */
+.admin-reservation-row:hover {
+    background-color: rgba(0, 194, 255, 0.06);
+}
+
+/* セルの調整 */
+.admin-reservation-cell--id {
+    width: 60px;
+}
+
+.admin-reservation-cell--date,
+.admin-reservation-cell--time {
+    white-space: nowrap;
+}
+
+/* 状態 */
+.admin-reservation-status {
+    font-size: 0.85rem;
+    padding: 0.1rem 0.5rem;
+    border-radius: 9999px;
+    background-color: var(--color-bg-soft);
+    color: var(--salon-brown);
+    display: inline-block;
+
+    /* ✅ 追加：確定/キャンセル等が改行されないように */
+    white-space: nowrap;
+    line-height: 1.4;
+}
+
+/* 操作セル */
+.admin-reservation-actions {
+    padding: 0.5rem 0.75rem;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+
+    /* ✅ 追加：ボタンを常に横並び（縦並び＆折返し防止） */
+    flex-direction: row;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+}
+
+/* ボタン共通 */
+.admin-reservation-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.3rem 0.8rem;
+    font-size: 0.8rem;
+    border-radius: 9999px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    font-family: var(--font-ui);
+    transition:
+        background-color 0.15s ease,
+        box-shadow 0.15s ease,
+        transform 0.1s ease,
+        color 0.15s ease;
+
+    /* ✅ 追加：ボタン文字が折れて縦に見えるのを防ぐ */
+    white-space: nowrap;
+    flex: 0 0 auto;
+}
+
+/* 編集ボタン（hoverでも青系を固定：緑にしない） */
+.admin-reservation-button--edit {
+    background-color: var(--color-main);
+    color: #ffffff;
+}
+
+.admin-reservation-button--edit:hover {
+    /* 背景色は固定のまま、影と浮きだけで反応 */
+    background-color: var(--color-main);
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-1px);
+}
+
+/* 削除ボタン */
+.admin-reservation-button--delete {
+    background-color: #b43d3d;
+    color: #ffffff;
+}
+
+.admin-reservation-button--delete:hover {
+    background-color: #912f2f;
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-1px);
+}
+
+/* =====================================================
+   react-calendar を管理画面の色味に馴染ませる（このページ限定）
+   ※ .admin-cal-wrap の中だけに効かせる
+===================================================== */
+
+.admin-cal-wrap .react-calendar {
+    width: 100%;
+    border: none;
+    /* デフォルト枠を消す */
+    background: transparent;
+    /* 外側カード(.admin-cal-wrap)に任せる */
+    font-family: var(--font-ui);
+    line-height: 1.2;
+}
+
+/* ナビ（prev/next）を使わないので見た目も消す（空要素が残る場合の保険） */
+.admin-cal-wrap .react-calendar__navigation {
+    display: none;
+}
+
+/* 曜日行 */
+.admin-cal-wrap .react-calendar__month-view__weekdays {
+    text-transform: none;
+    font-weight: 600;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 0.35rem;
+    padding-bottom: 0.35rem;
+}
+
+.admin-cal-wrap .react-calendar__month-view__weekdays__weekday {
+    color: var(--salon-brown);
+    font-size: 0.85rem;
+    padding: 0.25rem 0;
+}
+
+.admin-cal-wrap .react-calendar__month-view__weekdays__weekday abbr {
+    text-decoration: none;
+}
+
+/* タイル（各日） */
+.admin-cal-wrap .react-calendar__tile {
+    border-radius: 12px;
+    padding: 0.55rem 0.25rem;
+    color: var(--salon-brown);
+    background: transparent;
+    transition:
+        background-color 0.15s ease,
+        box-shadow 0.15s ease,
+        transform 0.1s ease;
+}
+
+/* ホバー */
+.admin-cal-wrap .react-calendar__tile:enabled:hover,
+.admin-cal-wrap .react-calendar__tile:enabled:focus {
+    background: var(--color-bg-soft);
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-1px);
+}
+
+/* 今日 */
+.admin-cal-wrap .react-calendar__tile--now {
+    background: rgba(0, 194, 255, 0.10);
+    /* 既存のhoverトーンに寄せる */
+    font-weight: 600;
+}
+
+/* 選択状態（valueはnull運用だけど、将来の保険で） */
+.admin-cal-wrap .react-calendar__tile--active {
+    background: var(--color-main);
+    color: #fff;
+}
+
+/* 休業日など disabled */
+.admin-cal-wrap .react-calendar__tile:disabled {
+    background: transparent;
+    color: rgba(120, 120, 120, 0.8);
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+/* 月ビューの余白（行間を管理画面に合わせて少し詰める） */
+.admin-cal-wrap .react-calendar__month-view__days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    /* grid-gap はブラウザにより効き方が違うので保険 */
+}
+
+/* タイルの中身（数字 + ドット）を整列 */
+.admin-cal-wrap .react-calendar__tile>abbr {
+    display: inline-block;
+    min-width: 2ch;
+}
+
+/* Dot（予約あり）を少し“管理画面っぽく”見せる */
+.admin-cal-wrap .admin-cal-dot {
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.6);
+}
+
+/* ===== 日付タイルの縦列ズレ対策（高さ固定＆揃え） ===== */
+.admin-cal-wrap .react-calendar__month-view__days__day {
+    width: 100%;
+    /* タイルの高さを固定して縦列のガタつきを止める */
+    height: 44px;
+}
+
+.admin-cal-wrap .react-calendar__tile {
+    /* 日付（数字）が常に同じ位置になるようにする */
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    padding: 0;
+    /* 高さ固定と干渉しやすいのでリセット */
+}
+
+/* 数字（abbr）をブレない幅で確保 */
+.admin-cal-wrap .react-calendar__tile>abbr {
+    display: inline-block;
+    width: 2ch;
+    text-align: center;
+    line-height: 1;
+}
+
+/* 予約ありドットは absolute にして、数字の位置がズレないようにする */
+.admin-cal-wrap .admin-cal-dot {
+    position: absolute;
+    left: 50%;
+    bottom: 6px;
+    transform: translateX(-50%);
+    margin-left: 0;
+    pointer-events: none;
+}
+
+/* =====================================================
+   月初(1,2,3日)の列ズレ対策 + ドット重なり対策（追記で上書き）
+===================================================== */
+
+/* 1) showNeighboringMonth=false の空マスが消えて列がズレるのを防ぐ */
+.admin-cal-wrap .react-calendar__tile--neighboringMonth,
+.admin-cal-wrap .react-calendar__month-view__days__day--neighboringMonth {
+    display: block !important;
+    /* grid の枠を残す */
+    visibility: hidden !important;
+    /* 見えない */
+    pointer-events: none !important;
+}
+
+/* 2) 日付(数字)を上、予約ドットを下に固定して重ならないようにする */
+.admin-cal-wrap .react-calendar__month-view__days__day {
+    height: 44px;
+    /* 既存の高さ固定を念のため維持 */
+}
+
+.admin-cal-wrap .react-calendar__tile {
+    position: relative;
+    display: block;
+    /* flexを解除して、配置を absolute で安定させる */
+    padding: 0;
+    /* 既存の padding リセット */
+}
+
+/* 数字を上に固定 */
+.admin-cal-wrap .react-calendar__tile>abbr {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2ch;
+    text-align: center;
+    line-height: 1;
+}
+
+/* 予約ドットを下に固定（数字と絶対に重ならない） */
+.admin-cal-wrap .admin-cal-dot {
+    position: absolute;
+    left: 50%;
+    bottom: 6px;
+    transform: translateX(-50%);
+    margin-left: 0;
+    pointer-events: none;
+}
+
+/* =====================================================
+   react-calendar 日付ズレ（6列化）を強制的に直す上書き
+   ※ 末尾追記でOK
+===================================================== */
+
+/* 曜日行も日付行も「必ず7列グリッド」に揃える */
+.admin-cal-wrap .react-calendar__month-view__weekdays {
+    display: grid !important;
+    grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+    gap: 6px;
+}
+
+.admin-cal-wrap .react-calendar__month-view__days {
+    display: grid !important;
+    grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+    gap: 6px;
+}
+
+/* react-calendar標準CSSの flex / max-width が残っても崩れないように無効化 */
+.admin-cal-wrap .react-calendar__tile {
+    max-width: none !important;
+    /* 標準の 14.2857% 制限を解除 */
+    flex: none !important;
+    /* flex計算を無効化 */
+}
+
+/* 「10日」「31日」などが 2ch だと折り返すので、3ch にして縦ズレも防ぐ */
+.admin-cal-wrap .react-calendar__tile>abbr {
+    width: 3ch !important;
+    white-space: nowrap !important;
+}
+
+/* 予約ドットが数字と重ならないように下固定（あなたの現状維持＋保険） */
+.admin-cal-wrap .admin-cal-dot {
+    bottom: 6px;
+}
+
+
+/* スマホは少し高さを増やして押しやすく */
+@media (max-width: 640px) {
+    .admin-cal-wrap .react-calendar__month-view__days__day {
+        height: 48px;
+    }
+
+    .admin-cal-wrap .react-calendar__tile>abbr {
+        top: 9px;
+    }
+
+    .admin-cal-wrap .admin-cal-dot {
+        bottom: 7px;
+    }
+}
+
+/* スマホは押しやすさ優先 */
+@media (max-width: 640px) {
+    .admin-cal-wrap {
+        padding: 0.85rem;
+    }
+
+    .admin-cal-wrap .react-calendar__month-view__days__day {
+        height: 48px;
+    }
+
+    .admin-cal-wrap .react-calendar__tile {
+        padding: 0;
+        border-radius: 10px;
+    }
+}
+
+/* ============================================
+   レスポンシブ（指定ブレークポイント）
+   - スマホ（〜640px）
+   - タブレット（641px〜1024px）
+   - PC（1025px〜）
+   - iPhone SE（〜375px）
+============================================ */
+
+/* ■ PC（1025px〜） */
+@media (min-width: 1025px) {
+    .admin-reservation-page {
+        padding: 2rem 1rem 3rem;
+    }
+
+    .admin-reservation-table {
+        font-size: 0.9rem;
+    }
+}
+
+/* ■ タブレット（641px〜1024px） */
+@media (min-width: 641px) and (max-width: 1024px) {
+    .admin-reservation-page {
+        padding: 1.5rem 1rem 2.5rem;
+    }
+
+    .admin-reservation-title {
+        font-size: 1.2rem;
+        margin-bottom: 1.1rem;
+    }
+
+    .admin-reservation-table th,
+    .admin-reservation-table td {
+        padding: 0.45rem 0.6rem;
+    }
+
+    /* ✅ 変更：折り返しをさせず、横並び維持（横スクロールで対応） */
+    .admin-reservation-actions {
+        flex-wrap: nowrap;
+    }
+}
+
+/* ■ スマホ（〜640px） */
+@media (max-width: 640px) {
+    .admin-reservation-page {
+        padding: 1.25rem 0.75rem 2rem;
+    }
+
+    .admin-reservation-title {
+        font-size: 1.15rem;
+        margin-bottom: 1rem;
+    }
+
+    /* ✅ wrapper はベースで横スクロール許可済み */
+    .admin-reservation-table {
+        /* ✅ 変更：640px固定だと列が潰れて崩れるので、ベース(min-width:980px)を活かす */
+        font-size: 0.88rem;
+    }
+
+    .admin-reservation-table th,
+    .admin-reservation-table td {
+        padding: 0.4rem 0.5rem;
+    }
+
+    /* ✅ 変更：スマホでも操作ボタンは横並び維持 */
+    .admin-reservation-actions {
+        flex-wrap: nowrap;
+        gap: 0.35rem;
+    }
+
+    .admin-reservation-button {
+        padding: 0.25rem 0.7rem;
+        font-size: 0.78rem;
+    }
+}
+
+/* ■ iPhone SE 想定（幅 375px 前後） */
+@media (max-width: 375px) {
+    .admin-reservation-page {
+        padding: 1rem 0.5rem 1.75rem;
+    }
+
+    .admin-reservation-title {
+        font-size: 1.05rem;
+        margin-bottom: 0.9rem;
+    }
+
+    .admin-reservation-table {
+        /* ✅ 変更：縦並び回避。横スクロールで見る設計に寄せる */
+        font-size: 0.85rem;
+    }
+
+    .admin-reservation-table th,
+    .admin-reservation-table td {
+        padding: 0.35rem 0.45rem;
+    }
+
+    /* ✅ 変更：ここが縦並びの原因だったので横並びに戻す */
+    .admin-reservation-actions {
+        flex-direction: row;
+        align-items: center;
+        flex-wrap: nowrap;
+        gap: 0.3rem;
+    }
+
+    /* ✅ 変更：幅100%をやめて横並びに */
+    .admin-reservation-button {
+        width: auto;
+        justify-content: center;
+        padding: 0.3rem 0.6rem;
+        font-size: 0.8rem;
+    }
+
+    /* ===== 予約カレンダー（iPhone SE 微調整）===== */
+    .admin-cal-tab {
+        padding: 0.35rem 0.75rem;
+        font-size: 0.85rem;
+    }
+}

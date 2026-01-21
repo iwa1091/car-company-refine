@@ -5,6 +5,9 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
+    {{-- ✅ CSRF（web.php に /api を移したため POST 等で必須） --}}
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
     {{-- ページタイトル（Inertia対応） --}}
     <title inertia>{{ config('app.name', 'Lash Brow Ohana') }}</title>
 

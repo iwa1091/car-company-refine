@@ -1,0 +1,532 @@
+/* /resources/css/pages/admin/service-form.css
+   Admin Service Form (Dark + Blue + Glass)
+   - ServiceForm.jsx の class 名に完全一致（変更不要）
+   - login.css / dashboard.css / business-hours.css と同系統
+===================================================== */
+
+/* -----------------------------------------------------
+  Page wrapper (background glow + grid)
+----------------------------------------------------- */
+.admin-service-form-page {
+    position: relative;
+    min-height: 100vh;
+    padding: 1.75rem 1rem 2.75rem;
+    background-color: var(--background, #060a12);
+    color: var(--foreground, #eaf1ff);
+    overflow-x: hidden;
+}
+
+/* 背景の発光 */
+.admin-service-form-page::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background:
+        radial-gradient(980px 560px at 18% 8%, rgba(43, 124, 255, 0.22), transparent 62%),
+        radial-gradient(860px 560px at 88% 12%, rgba(0, 194, 255, 0.14), transparent 64%),
+        radial-gradient(760px 460px at 50% 95%, rgba(255, 255, 255, 0.05), transparent 62%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.00));
+}
+
+/* 薄いグリッド */
+.admin-service-form-page::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.16;
+    background-image:
+        linear-gradient(to right, rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(720px 540px at 50% 42%, rgba(0, 0, 0, 1), transparent 70%);
+}
+
+/* -----------------------------------------------------
+  Center container (glass card)
+----------------------------------------------------- */
+.admin-service-form-container {
+    position: relative;
+    z-index: 1;
+
+    max-width: 760px;
+    margin: 0 auto;
+
+    border-radius: var(--radius-large, 18px);
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.14));
+    background: linear-gradient(180deg,
+            rgba(255, 255, 255, 0.11),
+            rgba(255, 255, 255, 0.06));
+    box-shadow: var(--shadow-medium, 0 16px 44px rgba(0, 0, 0, 0.45));
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
+    padding: 1.8rem 1.6rem 2.4rem;
+}
+
+/* ほんのり上部発光 */
+.admin-service-form-container::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background:
+        radial-gradient(900px 260px at 12% 0%,
+            rgba(43, 124, 255, 0.20),
+            transparent 62%),
+        radial-gradient(520px 240px at 88% 0%,
+            rgba(0, 194, 255, 0.10),
+            transparent 62%);
+    opacity: 0.9;
+}
+
+/* -----------------------------------------------------
+  Back area / title
+----------------------------------------------------- */
+.service-form-back-area {
+    position: relative;
+    margin-bottom: 0.95rem;
+}
+
+.service-form-back-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+
+    padding: 0.45rem 1.15rem;
+    font-size: 0.86rem;
+    font-family: var(--font-ui, system-ui);
+    font-weight: 900;
+
+    border-radius: var(--radius-full, 9999px);
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.14));
+    background: rgba(10, 14, 26, 0.22);
+    color: rgba(255, 255, 255, 0.92);
+    text-decoration: none;
+
+    box-shadow: var(--shadow-soft, 0 10px 28px rgba(0, 0, 0, 0.35));
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.service-form-back-button:hover {
+    transform: translateY(-2px);
+    border-color: var(--border-color-strong, rgba(255, 255, 255, 0.22));
+    background: rgba(10, 14, 26, 0.28);
+    box-shadow: var(--shadow-medium, 0 16px 44px rgba(0, 0, 0, 0.45));
+}
+
+.service-form-title {
+    position: relative;
+    margin: 0 0 1.5rem 0;
+    font-family: var(--font-heading, system-ui);
+    font-size: 1.65rem;
+    font-weight: 900;
+    letter-spacing: 0.02em;
+    color: rgba(255, 255, 255, 0.93);
+}
+
+/* -----------------------------------------------------
+  Form base
+----------------------------------------------------- */
+.service-form {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 640px;
+}
+
+.service-form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+}
+
+.service-form-label {
+    font-size: 0.92rem;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.88);
+    letter-spacing: 0.01em;
+}
+
+/* -----------------------------------------------------
+  Inputs / selects / textarea (glass field)
+----------------------------------------------------- */
+.service-form-input,
+.service-form-select,
+.service-form-textarea {
+    width: 100%;
+    height: 46px;
+
+    border-radius: 12px;
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.14));
+    background: rgba(10, 14, 26, 0.35);
+
+    color: rgba(255, 255, 255, 0.92);
+    padding: 0 0.95rem;
+    font-size: 0.92rem;
+    font-family: var(--font-ui, system-ui);
+    font-weight: 700;
+
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, opacity 0.15s ease;
+}
+
+.service-form-input::placeholder,
+.service-form-textarea::placeholder {
+    color: rgba(234, 241, 255, 0.55);
+}
+
+.service-form-input:focus,
+.service-form-select:focus,
+.service-form-textarea:focus {
+    border-color: rgba(0, 194, 255, 0.55);
+    box-shadow:
+        0 0 0 4px rgba(0, 194, 255, 0.16),
+        0 12px 26px rgba(0, 0, 0, 0.35);
+    transform: translateY(-1px);
+}
+
+.service-form-input:disabled,
+.service-form-select:disabled,
+.service-form-textarea:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+/* textarea */
+.service-form-textarea {
+    height: auto;
+    min-height: 140px;
+    padding: 0.75rem 0.95rem;
+    resize: vertical;
+}
+
+/* -----------------------------------------------------
+  Category row
+----------------------------------------------------- */
+.service-form-category-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.service-form-category-row .service-form-select {
+    flex: 1 1 260px;
+}
+
+/* ＋新規作成（ピル・ガラス） */
+.service-form-category-add {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0.5rem 0.95rem;
+    height: 44px;
+
+    font-size: 0.85rem;
+    font-family: var(--font-ui, system-ui);
+    font-weight: 900;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+
+    border-radius: var(--radius-full, 9999px);
+    border: 1px solid rgba(43, 124, 255, 0.35);
+
+    color: rgba(255, 255, 255, 0.92);
+    background: rgba(43, 124, 255, 0.16);
+
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.service-form-category-add:hover {
+    transform: translateY(-2px);
+    border-color: rgba(0, 194, 255, 0.55);
+    background: rgba(0, 194, 255, 0.14);
+    box-shadow: var(--shadow-soft, 0 10px 28px rgba(0, 0, 0, 0.35));
+}
+
+.service-form-category-add:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(0, 194, 255, 0.16);
+}
+
+/* -----------------------------------------------------
+  Checkbox rows
+----------------------------------------------------- */
+.service-form-checkbox-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.92rem;
+    font-family: var(--font-ui, system-ui);
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.88);
+}
+
+.service-form-checkbox {
+    width: 1.1rem;
+    height: 1.1rem;
+    accent-color: var(--color-accent, #2b7cff);
+}
+
+/* -----------------------------------------------------
+  Features
+----------------------------------------------------- */
+.service-form-feature-input {
+    width: 100%;
+}
+
+.service-features-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin-top: 0.45rem;
+}
+
+.service-feature-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+
+    padding: 0.35rem 0.7rem;
+    border-radius: var(--radius-full, 9999px);
+
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.14));
+    background: rgba(10, 14, 26, 0.22);
+    color: rgba(255, 255, 255, 0.90);
+
+    font-size: 0.82rem;
+    font-family: var(--font-ui, system-ui);
+    font-weight: 800;
+
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.service-feature-chip-remove {
+    border: none;
+    background: none;
+    cursor: pointer;
+
+    font-size: 0.95em;
+    font-weight: 900;
+    line-height: 1;
+
+    color: rgba(255, 170, 178, 0.95);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.service-feature-chip-remove:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+/* -----------------------------------------------------
+  Image preview
+----------------------------------------------------- */
+.service-form-image-preview {
+    margin-top: 0.55rem;
+    width: 8rem;
+    height: 8rem;
+    border-radius: 14px;
+    object-fit: cover;
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.14));
+    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.35);
+}
+
+/* -----------------------------------------------------
+  Errors
+----------------------------------------------------- */
+.service-form-error {
+    font-size: 0.86rem;
+    font-weight: 800;
+    color: rgba(255, 170, 178, 0.95);
+}
+
+/* -----------------------------------------------------
+  Submit button (primary gradient)
+----------------------------------------------------- */
+.service-form-submit-button {
+    margin-top: 1.25rem;
+    align-self: flex-start;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    height: 48px;
+    padding: 0.6rem 1.7rem;
+
+    border-radius: 12px;
+    border: 1px solid rgba(43, 124, 255, 0.35);
+
+    font-size: 0.95rem;
+    font-family: var(--font-ui, system-ui);
+    font-weight: 900;
+    letter-spacing: 0.03em;
+
+    color: #fff;
+    background: linear-gradient(90deg, rgba(43, 124, 255, 1), rgba(0, 194, 255, 0.95));
+    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.35);
+
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease, opacity 0.15s ease;
+}
+
+.service-form-submit-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.45);
+    filter: saturate(1.05);
+}
+
+.service-form-submit-button:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.38);
+}
+
+.service-form-submit-button:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    filter: none;
+}
+
+.service-form-error {
+    margin-top: 0.35rem;
+    font-size: 0.85rem;
+    line-height: 1.3;
+    color: #b43d3d;
+}
+
+/* ============================================
+   Responsive
+============================================ */
+
+/* ■ PC（1024px〜） */
+@media (min-width: 1024px) {
+    .admin-service-form-page {
+        padding: 2.25rem 1.5rem 3rem;
+    }
+
+    .admin-service-form-container {
+        padding: 2.1rem 2.25rem 2.7rem;
+    }
+
+    .service-form-title {
+        font-size: 1.85rem;
+    }
+}
+
+/* ■ タブレット（768px〜1023px） */
+@media (max-width: 1023px) and (min-width: 768px) {
+    .admin-service-form-page {
+        padding: 2rem 1.25rem 2.75rem;
+    }
+
+    .admin-service-form-container {
+        padding: 1.85rem 1.75rem 2.4rem;
+    }
+}
+
+/* ■ スマホ共通（〜767px） */
+@media (max-width: 767px) {
+    .admin-service-form-page {
+        padding: 1.5rem 0.75rem 2.5rem;
+    }
+
+    .admin-service-form-container {
+        padding: 1.4rem 1.1rem 2.1rem;
+        border-radius: 16px;
+    }
+
+    .service-form-title {
+        font-size: 1.45rem;
+        margin-bottom: 1.2rem;
+    }
+
+    .service-form-category-row {
+        gap: 0.55rem;
+    }
+
+    .service-form-category-row .service-form-select {
+        flex: 1 1 100%;
+    }
+
+    .service-form-category-add {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .service-form-submit-button {
+        width: 100%;
+        align-self: stretch;
+        justify-content: center;
+    }
+}
+
+/* ■ iPhone SE 想定（〜400px） */
+@media (max-width: 400px) {
+    .admin-service-form-page {
+        padding: 1.25rem 0.5rem 2.25rem;
+    }
+
+    .admin-service-form-container {
+        padding: 1.25rem 0.75rem 1.9rem;
+    }
+
+    .service-form-title {
+        font-size: 1.28rem;
+    }
+
+    .service-form-input,
+    .service-form-select {
+        height: 44px;
+        font-size: 0.88rem;
+        padding: 0 0.85rem;
+    }
+
+    .service-form-textarea {
+        font-size: 0.88rem;
+        padding: 0.7rem 0.85rem;
+    }
+
+    .service-form-back-button {
+        font-size: 0.82rem;
+        padding: 0.45rem 1rem;
+    }
+
+    .service-feature-chip {
+        font-size: 0.78rem;
+    }
+
+    .service-form-submit-button {
+        font-size: 0.92rem;
+        height: 46px;
+        padding: 0.6rem 1.4rem;
+    }
+}
+
+/* Motion safety */
+@media (prefers-reduced-motion: reduce) {
+
+    .service-form-back-button,
+    .service-form-input,
+    .service-form-select,
+    .service-form-textarea,
+    .service-form-category-add,
+    .service-feature-chip-remove,
+    .service-form-submit-button {
+        transition: none;
+    }
+}

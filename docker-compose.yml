@@ -1,11 +1,23 @@
-version: '3.8'
-
 services:
+  # ✅ 入口(gateway): http://localhost を 1本化（/ -> Next, /api & /sanctum -> Laravel）
+  gateway:
+    image: nginx:1.21.1
+    container_name: gateway
+    ports:
+      - "80:80"
+    volumes:
+      - ./docker/nginx/gateway/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - frontend
+      - nginx
+
+  # ✅ Laravel 用 nginx（アプリ本体）
   nginx:
     image: nginx:1.21.1
     container_name: nginx
     ports:
-      - "80:80"
+      # 🔁 host:80 は gateway が使うので退避（Laravel直確認用に残す）
+      - "8081:80"
     volumes:
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
       - ./src:/var/www
@@ -17,7 +29,6 @@ services:
     container_name: php
     volumes:
       - ./src:/var/www
-    # Laravel の設定は src/.env から読み込まれるので、environment は不要
 
   mysql:
     image: mysql:8.0.26
@@ -53,19 +64,26 @@ services:
       - "8025:8025"
       - "1025:1025"
 
-  ngrok:
-    image: ngrok/ngrok:latest
-    container_name: ngrok
-    restart: always
+  # ✅ Next.js frontend（開発: gateway経由で http://localhost/ を見る）
+  frontend:
+    image: node:20
+    container_name: frontend
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
     environment:
-      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
-    command: >
-      http nginx:80
+      - NODE_ENV=development
+      # ※ apiFetch は相対パスで叩く前提なので必須ではない（残してOK）
+      - NEXT_PUBLIC_BACKEND_ORIGIN=http://nginx
+    command: sh -lc "npm install && npm run dev -- -H 0.0.0.0 -p 3000"
     ports:
-      - "4040:4040"
+      # 直接 http://localhost:3000 で見たい時用（不要なら消してOK）
+      - "3000:3000"
     depends_on:
       - nginx
 
+  # （残してOK：Laravel側Vite等で使ってたなら）
   node:
     image: node:20
     container_name: node
@@ -75,3 +93,6 @@ services:
     command: tail -f /dev/null
     ports:
       - "5173:5173"
+
+volumes:
+  frontend_node_modules:

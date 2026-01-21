@@ -1,78 +1,123 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Middleware\Authenticate;
+
+use App\Http\Controllers\Public\MenuController;
+
+// Public APIs
+use App\Http\Controllers\Api\ReservationController as PublicReservationController;
+use App\Http\Controllers\Api\ReservationCancelController;
+
+// Admin session APIs (Next.js)
+use App\Http\Controllers\Api\AdminSessionController;
+
+// Admin APIs
+use App\Http\Controllers\Api\AdminController as ApiAdminController;
+use App\Http\Controllers\Admin\AdminReservationController;
+use App\Http\Controllers\Admin\AdminBlockController;
+use App\Http\Controllers\Admin\BusinessHourController;
+use App\Http\Controllers\Admin\ServiceController;
+use App\Http\Controllers\Admin\CategoryController;
+
+Route::get('/public/menu', [MenuController::class, 'apiPublicMenu']);
 
 /*
 |--------------------------------------------------------------------------
-| API Routes（JSONのみ）
-|--------------------------------------------------------------------------
-| Inertia ページは web.php で処理します。
+| Public APIs (for Next.js user pages)
 |--------------------------------------------------------------------------
 */
+Route::get('/reservations/month-schedule', [PublicReservationController::class, 'monthSchedule']);
+Route::get('/business-hours/closed-dates', [PublicReservationController::class, 'closedDates']);
+Route::get('/reservations/check', [PublicReservationController::class, 'checkAvailability']);
+Route::post('/reservations', [PublicReservationController::class, 'store']);
 
-// ============================================================
-// 🕒 営業時間設定 API（BusinessHourController）
-// ============================================================
-use App\Http\Controllers\Admin\BusinessHourController;
+// サービス一覧（予約フォーム用）
+Route::get('/services', [ServiceController::class, 'apiList']);
 
-Route::prefix('business-hours')->group(function () {
-    // ReservationList.jsx が /api/business-hours/weekly を叩くため残す
-    Route::get('/weekly', [BusinessHourController::class, 'getWeekly']);
-    Route::put('/weekly', [BusinessHourController::class, 'updateWeekly']);
+// ✅ キャンセル（Nextページが叩くAPI）
+// ✅ 重要：web.php を消しても route('reservations.cancel.show') が解決できるよう「ルート名」を付与
+Route::prefix('reservations')->group(function () {
+    Route::get('cancel/{token}', [ReservationCancelController::class, 'show'])
+        ->where('token', '[A-Za-z0-9]+')
+        ->name('reservations.cancel.show');
 
-    // ReservationEdit.jsx が /api/business-hours を叩くため残す
-    Route::get('/', [BusinessHourController::class, 'getHours']);
-    Route::put('/', [BusinessHourController::class, 'updateHours']);
+    Route::post('cancel/{token}', [ReservationCancelController::class, 'cancel'])
+        ->where('token', '[A-Za-z0-9]+')
+        ->name('reservations.cancel');
 });
 
+/*
+|--------------------------------------------------------------------------
+| Admin Session APIs (cookie session + CSRF 前提)
+|--------------------------------------------------------------------------
+| ※ これが「web ミドルウェア必須」ポイント
+*/
+Route::middleware('web')->group(function () {
+    Route::get('/csrf', [AdminSessionController::class, 'csrf']);
 
-// ============================================================
-// 🧑‍💼 管理者向け API（React 管理画面 fetch 用）
-// ============================================================
-//
-// ※ 現状のフロントが /api/admin/... を叩いている前提で維持します。
-//    （方式Aで /admin/api に寄せるのは後で段階的に）
-// ============================================================
+    Route::prefix('admin')->group(function () {
+        Route::post('session', [AdminSessionController::class, 'login']);
 
-use App\Http\Controllers\Admin\AdminReservationController;
-use App\Http\Controllers\Admin\ServiceController;
-// ✅ Schedule モデルが存在しない環境でも落ちないように、Schedule系は Api\AdminController に寄せる
-use App\Http\Controllers\Api\AdminController as ApiAdminController;
+        Route::middleware([Authenticate::class . ':admin'])->group(function () {
+            Route::get('me', [AdminSessionController::class, 'me']);
+            Route::delete('session', [AdminSessionController::class, 'logout']);
+        });
+    });
+});
 
-Route::prefix('admin')->group(function () {
+/*
+|--------------------------------------------------------------------------
+| Admin APIs (for Next.js admin pages)
+|--------------------------------------------------------------------------
+| ※ cookie session を使うなら、ここも web ミドルウェア必須
+*/
+Route::middleware(['web', Authenticate::class . ':admin'])->prefix('admin')->group(function () {
 
-    // サービス管理 API（React管理画面用に残す）
-    Route::get('services', [ServiceController::class, 'apiIndex']);
-    Route::post('services', [ServiceController::class, 'apiStore']);
-    Route::put('services/{service}', [ServiceController::class, 'apiUpdate']);
-    Route::delete('services/{service}', [ServiceController::class, 'apiDestroy']);
+    // timetable
+    Route::get('timetable', [AdminReservationController::class, 'apiTimetable']);
 
-    // 予約一覧/削除 API（ReservationList.jsx が使用）
+    // blocks
+    Route::post('blocks', [AdminBlockController::class, 'store']);
+    Route::put('blocks/{id}', [AdminBlockController::class, 'update']);
+    Route::delete('blocks/{id}', [AdminBlockController::class, 'destroy']);
+
+    // reservations
     Route::get('reservations', [AdminReservationController::class, 'apiIndex']);
+    Route::get('reservations/{id}', [AdminReservationController::class, 'apiShow']);
+    Route::put('reservations/{id}', [AdminReservationController::class, 'apiUpdate']);
     Route::delete('reservations/{id}', [AdminReservationController::class, 'apiDestroy']);
 
-    // ✅ スケジュール管理 API（Scheduleモデルを使わない実装に合わせる）
-    // ※ ルートパラメータ名 {schedule} は従来の形のままでも、Controller側が型ヒント無しなのでモデルバインドされません
+    // services
+    Route::get('services', [ServiceController::class, 'apiIndex']);
+    Route::post('services', [ServiceController::class, 'apiStore']);
+    Route::get('services/{service}', [ServiceController::class, 'apiShow']);
+    Route::put('services/{service}', [ServiceController::class, 'apiUpdate']);
+    Route::delete('services/{service}', [ServiceController::class, 'apiDestroy']);
+    Route::patch('services/{service}/toggle', [ServiceController::class, 'apiToggle']);
+
+    // categories
+    Route::get('categories', [CategoryController::class, 'apiIndex']);
+    Route::post('categories', [CategoryController::class, 'apiStore']);
+
+    // schedules
     Route::get('schedules', [ApiAdminController::class, 'indexSchedules']);
     Route::post('schedules', [ApiAdminController::class, 'storeSchedule']);
     Route::put('schedules/{schedule}', [ApiAdminController::class, 'updateSchedule']);
     Route::delete('schedules/{schedule}', [ApiAdminController::class, 'destroySchedule']);
 });
 
+/*
+|--------------------------------------------------------------------------
+| Business Hours APIs
+|--------------------------------------------------------------------------
+*/
+Route::prefix('business-hours')->group(function () {
+    Route::get('/weekly', [BusinessHourController::class, 'getWeekly']);
+    Route::get('/', [BusinessHourController::class, 'getHours']);
 
-// ============================================================
-// 🧾 一般ユーザー向け API（予約フォーム用）
-// ============================================================
-
-use App\Http\Controllers\Api\ReservationController as ApiReservationController;
-
-Route::get('/reservations/month-schedule', [ApiReservationController::class, 'monthSchedule']);
-
-// サービス一覧（予約フォームが参照している可能性が高いので残す）
-Route::get('/services', [ServiceController::class, 'apiList']);
-
-// 予約作成
-Route::post('/reservations', [ApiReservationController::class, 'store']);
-
-// 予約可能時間のチェック
-Route::get('/reservations/check', [ApiReservationController::class, 'checkAvailability']);
+    Route::middleware(['web', Authenticate::class . ':admin'])->group(function () {
+        Route::put('/weekly', [BusinessHourController::class, 'updateWeekly']);
+        Route::put('/', [BusinessHourController::class, 'updateHours']);
+    });
+});

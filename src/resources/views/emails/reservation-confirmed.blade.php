@@ -249,6 +249,45 @@
 
                                     $serviceName = optional($reservation->service)->name ?? '未設定';
                                     $notes = $reservation->notes ?? null;
+
+                                    /**
+                                     * ✅ キャンセルURLの不一致対策
+                                     * - 旧: /reservations/cancel/{token}
+                                     * - 新(Nextページ): /reservation/cancel/{token}
+                                     *
+                                     * 他ファイルに依存しないよう、$cancelUrl から token を抜き取り、
+                                     * フロント(Next)用URLをこのBlade内で組み立てる。
+                                     */
+                                    $cancelButtonUrl = null;
+
+                                    if (!empty($cancelUrl) && is_string($cancelUrl)) {
+                                        $token = null;
+
+                                        // cancelUrl が「トークンのみ」で渡ってくるケースにも対応
+                                        if (preg_match('/^[A-Za-z0-9]{20,}$/', $cancelUrl)) {
+                                            $token = $cancelUrl;
+                                        } else {
+                                            $path = parse_url($cancelUrl, PHP_URL_PATH);
+                                            if (is_string($path) && $path !== '') {
+                                                $seg = trim($path, '/');
+                                                $parts = explode('/', $seg);
+                                                $token = end($parts) ?: null;
+                                            }
+                                        }
+
+                                        // フロントURL（定義があれば優先、なければ app.url）
+                                        $frontendBase = config('app.frontend_url')
+                                            ?? config('services.frontend.url')
+                                            ?? config('app.url');
+
+                                        if (!empty($token) && is_string($frontendBase) && $frontendBase !== '') {
+                                            // NextのページURLに寄せる
+                                            $cancelButtonUrl = rtrim($frontendBase, '/') . '/reservation/cancel/' . $token;
+                                        } else {
+                                            // 最低限の置換フォールバック（旧URLを新URLへ寄せる）
+                                            $cancelButtonUrl = str_replace('/reservations/cancel/', '/reservation/cancel/', $cancelUrl);
+                                        }
+                                    }
                                 @endphp
 
                                 <table role="presentation" class="details" width="100%" cellpadding="0" cellspacing="0" border="0">
@@ -283,18 +322,22 @@
                                 </div>
 
                                 {{-- ✅ キャンセル導線（cancelUrl があるときだけ表示） --}}
-                                @if(!empty($cancelUrl))
+                                @if(!empty($cancelButtonUrl))
                                     <p class="section-title" style="margin-top: 14px;">キャンセルをご希望の場合</p>
                                     <div class="btn-wrap">
                                         <table role="presentation" cellpadding="0" cellspacing="0" border="0" class="btn-table">
                                             <tr>
                                                 <td bgcolor="#d92d20" style="border-radius: 10px;">
-                                                    <a href="{{ $cancelUrl }}" class="btn">キャンセル手続きへ進む</a>
+                                                    <a href="{{ $cancelButtonUrl }}" class="btn">キャンセル手続きへ進む</a>
                                                 </td>
                                             </tr>
                                         </table>
+
                                         <div class="btn-sub">
-                                            ※ 上記リンクからキャンセル画面へ進み、確定してください。
+                                            ※ 上記リンクからキャンセル画面へ進み、確定してください。<br>
+                                            <span style="word-break: break-all; display:inline-block;">
+                                                {{ $cancelButtonUrl }}
+                                            </span>
                                         </div>
                                     </div>
                                 @endif

@@ -1,0 +1,268 @@
+:root {
+    --bg: #f6f7f8;
+    --card: #ffffff;
+    --text: #101828;
+    --muted: #667085;
+    --border: #eaecf0;
+    --danger: #d92d20;
+    --danger-hover: #b42318;
+    --success: #12b76a;
+    --shadow: 0 10px 30px rgba(16, 24, 40, .08);
+    --radius: 16px;
+}
+
+.wrap {
+    max-width: 720px;
+    margin: 40px auto;
+    padding: 0 16px;
+    color: var(--text);
+}
+
+.card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+.cardHeader {
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--border);
+    background: #fff;
+}
+
+.title {
+    margin: 0;
+    font-size: 20px;
+    letter-spacing: .2px;
+}
+
+.subtitle {
+    margin: 8px 0 0 0;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.cardBody {
+    padding: 18px 20px 20px;
+}
+
+.summary {
+    margin: 0 0 14px 0;
+    padding: 14px 14px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: #fafafa;
+}
+
+.summaryRow {
+    display: flex;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px dashed #e6e8ec;
+}
+
+.summaryRow:last-child {
+    border-bottom: none;
+}
+
+.summaryLabel {
+    min-width: 110px;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.summaryValue {
+    font-size: 14px;
+    font-weight: 600;
+    flex: 1;
+    word-break: break-word;
+}
+
+.note {
+    margin-top: 14px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid #fde2e2;
+    background: #fff5f5;
+    color: #7a271a;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.formGroup {
+    margin-top: 14px;
+}
+
+.label {
+    display: block;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.textarea {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 12px;
+    font-size: 14px;
+    line-height: 1.6;
+    outline: none;
+    background: #fff;
+    color: var(--text);
+    caret-color: var(--text);
+}
+
+.textarea:focus {
+    border-color: #cfd4dc;
+    box-shadow: 0 0 0 4px rgba(16, 24, 40, .06);
+}
+
+.textarea::placeholder {
+    color: var(--muted);
+    opacity: 1;
+}
+
+.hint {
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.actions {
+    margin-top: 18px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.btn {
+    appearance: none;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform .05s ease, background .2s ease, border-color .2s ease;
+    user-select: none;
+}
+
+.btn:active {
+    transform: translateY(1px);
+}
+
+.btnDanger {
+    background: var(--danger);
+    color: #fff;
+}
+
+.btnDanger:hover {
+    background: var(--danger-hover);
+}
+
+.btnSecondary {
+    background: #fff;
+    border-color: var(--border);
+    color: var(--text);
+}
+
+.btnSecondary:hover {
+    background: #f9fafb;
+}
+
+.btnPrimary {
+    background: #101828;
+    color: #fff;
+}
+
+.btnPrimary:hover {
+    background: #0b1220;
+}
+
+.errorBox {
+    margin-top: 8px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid #fecaca;
+    background: #fff1f2;
+    color: #991b1b;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.7;
+}
+
+/* ---- Result page styles (Blade寄せ) ---- */
+.resultHeader {
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--border);
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 900;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.badgeOk {
+    color: var(--success);
+}
+
+.badgeNg {
+    color: var(--danger);
+}
+
+.resultTitle {
+    margin: 0;
+    font-size: 18px;
+}
+
+.resultBody {
+    padding: 18px 20px 20px;
+}
+
+.message {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--text);
+}
+
+.muted {
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+@media (max-width:520px) {
+    .wrap {
+        margin: 20px auto;
+    }
+
+    .summaryRow {
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .summaryLabel {
+        min-width: auto;
+    }
+
+    .btn {
+        width: 100%;
+    }
+}

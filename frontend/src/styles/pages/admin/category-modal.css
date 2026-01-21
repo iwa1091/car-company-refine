@@ -1,0 +1,316 @@
+/* /resources/css/pages/admin/category-modal.css */
+/* =====================================================
+   Admin Category Modal (新規カテゴリ作成モーダル)
+   ※ base/theme.css / base/global.css のトークンを使用
+   ※ Dark + Blue + Glass に統一（既存クラス名は維持）
+===================================================== */
+
+/* 背景オーバーレイ */
+.category-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-modal, 20000);
+
+    /* ガラス感のある暗幕 + ほんのりブルー */
+    background:
+        radial-gradient(900px 560px at 18% 8%, rgba(43, 124, 255, 0.18), transparent 62%),
+        radial-gradient(820px 520px at 88% 12%, rgba(0, 194, 255, 0.10), transparent 64%),
+        rgba(0, 0, 0, 0.55);
+
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+/* モーダルラッパー（中央寄せ） */
+.category-modal-wrapper {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-modal, 20000);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+
+    pointer-events: none;
+    /* ラッパー自体はクリックを通さない */
+}
+
+/* モーダル本体 */
+.category-modal-content {
+    pointer-events: auto;
+    width: 100%;
+    max-width: 420px;
+
+    position: relative;
+    border-radius: 1rem;
+
+    /* ガラスカード */
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.14));
+    background: linear-gradient(180deg,
+            rgba(255, 255, 255, 0.11),
+            rgba(255, 255, 255, 0.06));
+    box-shadow: var(--shadow-medium, 0 16px 44px rgba(0, 0, 0, 0.45));
+
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
+    padding: 1.6rem 1.5rem 1.8rem;
+}
+
+/* 上部のブルー発光（login/cardと同系） */
+.category-modal-content::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background:
+        radial-gradient(720px 240px at 12% 0%,
+            rgba(43, 124, 255, 0.20),
+            transparent 62%),
+        radial-gradient(560px 240px at 88% 0%,
+            rgba(0, 194, 255, 0.10),
+            transparent 62%);
+    opacity: 0.9;
+}
+
+/* タイトル */
+.category-modal-title {
+    position: relative;
+    z-index: 1;
+
+    font-family: var(--font-heading, system-ui);
+    font-size: 1.15rem;
+    font-weight: 900;
+    letter-spacing: 0.02em;
+    color: rgba(255, 255, 255, 0.93);
+
+    margin: 0 0 1rem 0;
+}
+
+/* フォーム全体 */
+.category-modal-form {
+    position: relative;
+    z-index: 1;
+
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* 項目ラッパー */
+.category-modal-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin-bottom: 0.4rem;
+}
+
+/* ラベル */
+.category-modal-label {
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.86);
+}
+
+/* 入力欄 */
+.category-modal-input {
+    width: 100%;
+    border-radius: 0.75rem;
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.14));
+
+    padding: 0.55rem 0.85rem;
+    font-size: 0.9rem;
+
+    background: rgba(10, 14, 26, 0.35);
+    color: rgba(255, 255, 255, 0.92);
+
+    outline: none;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+
+.category-modal-input::placeholder {
+    color: rgba(234, 241, 255, 0.55);
+}
+
+.category-modal-input:focus {
+    border-color: rgba(0, 194, 255, 0.55);
+    box-shadow: 0 0 0 4px rgba(0, 194, 255, 0.16);
+    transform: translateY(-1px);
+}
+
+/* エラーメッセージ */
+.category-modal-error {
+    font-size: 0.82rem;
+    color: rgba(255, 170, 178, 0.95);
+    font-weight: 800;
+    margin-top: 0.15rem;
+}
+
+/* ボタンエリア */
+.category-modal-actions {
+    position: relative;
+    z-index: 1;
+
+    margin-top: 1rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+/* 共通ボタン */
+.category-modal-button {
+    min-width: 90px;
+    padding: 0.5rem 1.1rem;
+
+    border-radius: 12px;
+    border: 1px solid transparent;
+
+    font-size: 0.9rem;
+    font-family: var(--font-ui, system-ui);
+    font-weight: 900;
+    letter-spacing: 0.02em;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.18s ease,
+        box-shadow 0.18s ease,
+        transform 0.12s ease,
+        opacity 0.18s ease,
+        border-color 0.18s ease,
+        filter 0.18s ease;
+}
+
+/* キャンセルボタン（ガラス） */
+.category-modal-button--cancel {
+    border-color: var(--border-color, rgba(255, 255, 255, 0.14));
+    background: rgba(10, 14, 26, 0.22);
+    color: rgba(255, 255, 255, 0.90);
+
+    box-shadow: var(--shadow-soft, 0 10px 28px rgba(0, 0, 0, 0.35));
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.category-modal-button--cancel:hover {
+    background: rgba(10, 14, 26, 0.28);
+    border-color: var(--border-color-strong, rgba(255, 255, 255, 0.22));
+    box-shadow: var(--shadow-medium, 0 16px 44px rgba(0, 0, 0, 0.45));
+    transform: translateY(-2px);
+}
+
+/* 保存ボタン（ブルーグラデ） */
+.category-modal-button--submit {
+    color: #fff;
+    border-color: rgba(43, 124, 255, 0.35);
+    background: linear-gradient(90deg, rgba(43, 124, 255, 1), rgba(0, 194, 255, 0.95));
+    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.35);
+}
+
+.category-modal-button--submit:hover {
+    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.45);
+    transform: translateY(-2px);
+    filter: saturate(1.05);
+}
+
+.category-modal-button--submit:disabled {
+    opacity: 0.6;
+    cursor: default;
+    box-shadow: none;
+    transform: none;
+    filter: none;
+}
+
+/* キーボードフォーカス */
+.category-modal-button:focus-visible,
+.category-modal-input:focus-visible {
+    outline: none;
+}
+
+/* ============================================
+   レスポンシブ
+============================================ */
+
+/* ■ PC（1024px〜） */
+@media (min-width: 1024px) {
+    .category-modal-content {
+        padding: 1.8rem 1.9rem 2rem;
+    }
+
+    .category-modal-title {
+        font-size: 1.2rem;
+    }
+}
+
+/* ■ タブレット（768px〜1023px） */
+@media (max-width: 1023px) and (min-width: 768px) {
+    .category-modal-wrapper {
+        padding: 1.25rem;
+    }
+
+    .category-modal-content {
+        max-width: 440px;
+    }
+}
+
+/* ■ スマホ共通（〜767px） */
+@media (max-width: 767px) {
+    .category-modal-wrapper {
+        padding: 1rem;
+    }
+
+    .category-modal-content {
+        max-width: 100%;
+        padding: 1.4rem 1.2rem 1.7rem;
+        border-radius: 0.95rem;
+    }
+
+    .category-modal-title {
+        font-size: 1.05rem;
+        margin-bottom: 0.9rem;
+    }
+
+    .category-modal-actions {
+        gap: 0.4rem;
+    }
+}
+
+/* ■ iPhone SE 想定（〜400px） */
+@media (max-width: 400px) {
+    .category-modal-wrapper {
+        padding: 0.9rem;
+    }
+
+    .category-modal-content {
+        padding: 1.1rem 0.9rem 1.4rem;
+    }
+
+    .category-modal-input {
+        font-size: 0.85rem;
+        padding: 0.5rem 0.7rem;
+    }
+
+    .category-modal-button {
+        font-size: 0.85rem;
+        padding: 0.45rem 0.85rem;
+        min-width: 80px;
+    }
+
+    .category-modal-title {
+        font-size: 1rem;
+    }
+}
+
+/* Motion safety */
+@media (prefers-reduced-motion: reduce) {
+
+    .category-modal-button,
+    .category-modal-input {
+        transition: none;
+    }
+}

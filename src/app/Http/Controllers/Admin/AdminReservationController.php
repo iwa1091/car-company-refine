@@ -10,6 +10,7 @@ use App\Models\Customer;     // 顧客モデル
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Inertia\Inertia;
+use App\Models\AdminBlock; // 追加
 
 class AdminReservationController extends Controller
 {
@@ -31,13 +32,6 @@ class AdminReservationController extends Controller
                 'end_time'      => $r->end_time,
                 'name'          => $r->name,
                 'email'         => $r->email,
-
-                // ✅ 追加：管理画面一覧で使う項目（- 表示の原因だった）
-                'phone'         => $r->phone,
-                'maker'         => $r->maker,
-                'car_model'     => $r->car_model,
-                'course'        => $r->course,
-
                 'status'        => $r->status,
                 'notes'         => $r->notes,
                 'service_name'  => $r->service?->name,
@@ -57,35 +51,213 @@ class AdminReservationController extends Controller
      * GET /api/admin/reservations
      * -------------------------------------------------------------
      */
-    public function apiIndex()
+   // app/Http/Controllers/Admin/AdminReservationController.php
+
+    public function apiIndex(Request $request)
     {
-        $reservations = Reservation::with(['service', 'user'])
-            ->orderBy('date', 'desc')
-            ->orderBy('start_time', 'desc')
+        $validated = $request->validate([
+            'date' => ['nullable', 'date'],
+            'from' => ['nullable', 'date'],
+            'to'   => ['nullable', 'date'],
+        ]);
+
+        $q = Reservation::with(['service', 'user']);
+
+        if (!empty($validated['date'])) {
+            $q->whereDate('date', $validated['date']);
+        } else {
+            if (!empty($validated['from'])) $q->whereDate('date', '>=', $validated['from']);
+            if (!empty($validated['to']))   $q->whereDate('date', '<=', $validated['to']);
+        }
+
+        $reservations = $q->orderBy('date', 'asc')
+            ->orderBy('start_time', 'asc')
             ->get()
             ->map(fn ($r) => [
-                'id'            => $r->id,
-                'date'          => $r->date,
-                'start_time'    => $r->start_time,
-                'end_time'      => $r->end_time,
-                'name'          => $r->name,
-                'email'         => $r->email,
+                'id'         => $r->id,
+                'date'       => $r->date?->format('Y-m-d') ?? (string)$r->date,
+                'start_time' => $r->start_time, // Reservationアクセサで HH:mm に寄る
+                'end_time'   => $r->end_time,
 
-                // ✅ 追加：ReservationList.jsx が表示している項目（ここが欠けていた）
-                'phone'         => $r->phone,
-                'maker'         => $r->maker,
-                'car_model'     => $r->car_model,
-                'course'        => $r->course,
+                // ✅ ブロックに必要
+                'name'       => $r->name,
+                'course'     => $r->course,
+                'maker'      => $r->maker,
+                'car_model'  => $r->car_model,
 
-                'status'        => $r->status,
-                'notes'         => $r->notes,
-                'service_name'  => $r->service?->name,
-                'duration'      => $r->service?->duration_minutes, // 所要時間も返す
-                'user_id'       => $r->user_id,
-                'user_name'     => $r->user?->name,
+                'service_id'   => $r->service_id,
+                'service_name' => $r->service?->name,
+                'duration'     => $r->service?->duration_minutes,
+
+                'status'     => $r->status,
+                'notes'      => $r->notes,
             ]);
 
         return response()->json($reservations);
+    }
+
+    /**
+     * -------------------------------------------------------------
+     * 🟦 API用：予約詳細
+     * GET /api/admin/reservations/{id}
+     * -------------------------------------------------------------
+     */
+    public function apiShow($id)
+    {
+        $reservation = Reservation::with(['service', 'user'])->findOrFail($id);
+
+        return response()->json([
+            'reservation' => [
+                'id'           => $reservation->id,
+                'date'         => $reservation->date?->format('Y-m-d') ?? (string)$reservation->date,
+                'start_time'   => $reservation->start_time, // accessor 想定（HH:mm）
+                'end_time'     => $reservation->end_time,
+
+                'name'         => $reservation->name,
+                'email'        => $reservation->email,
+                'status'       => $reservation->status,
+                'notes'        => $reservation->notes,
+
+                // 予約内容（ユーザー入力系）
+                'course'       => $reservation->course,
+                'maker'        => $reservation->maker,
+                'car_model'    => $reservation->car_model,
+
+                // サービス関連
+                'service_id'   => $reservation->service_id,
+                'service_name' => $reservation->service?->name,
+                'duration'     => $reservation->service?->duration_minutes,
+
+                // Next側が期待しているネスト構造（service.duration_minutes）
+                'service' => $reservation->service ? [
+                    'id'               => $reservation->service->id,
+                    'name'             => $reservation->service->name,
+                    'duration_minutes' => $reservation->service->duration_minutes,
+                ] : null,
+
+                // ユーザー情報（存在するなら）
+                'user_id'   => $reservation->user_id,
+                'user_name' => $reservation->user?->name,
+                'user'      => $reservation->user ? [
+                    'id'   => $reservation->user->id,
+                    'name' => $reservation->user->name,
+                ] : null,
+            ],
+        ], 200);
+    }
+
+    /**
+     * -------------------------------------------------------------
+     * 🟦 API用：予約更新（Next管理画面のPUT用）
+     * PUT /api/admin/reservations/{id}
+     * -------------------------------------------------------------
+     */
+    public function apiUpdate(Request $request, $id)
+    {
+        $reservation = Reservation::findOrFail($id);
+
+        // Next側から送られてくる項目に合わせる（end_time は受け取っても server で再計算）
+        $validated = $request->validate(
+            [
+                'name'       => ['required', 'string', 'max:255'],
+                'date'       => ['required', 'date_format:Y-m-d'],
+                'start_time' => ['required', 'date_format:H:i'],   // "HH:MM" 想定
+                'service_id' => ['required', 'exists:services,id'],
+            ],
+            [
+                'name.required'       => '氏名は必須です。',
+                'name.max'            => '氏名は255文字以内で入力してください。',
+                'date.required'       => '日付は必須です。',
+                'date.date_format'    => '日付の形式が不正です。',
+                'start_time.required' => '開始時刻は必須です。',
+                'start_time.date_format' => '開始時刻の形式が不正です。',
+                'service_id.required' => 'メニューを選択してください。',
+                'service_id.exists'   => '選択されたメニューが存在しません。',
+            ]
+        );
+
+        // サービスの施術時間から end_time を再計算
+        $service = Service::findOrFail($validated['service_id']);
+
+        $tz = config('app.timezone', 'Asia/Tokyo');
+
+        // "Y-m-d H:i" 形式で結合して Carbon に渡す
+        $startDateTime = Carbon::createFromFormat(
+            'Y-m-d H:i',
+            $validated['date'] . ' ' . $validated['start_time'],
+            $tz
+        );
+        $endDateTime   = (clone $startDateTime)->addMinutes($service->duration_minutes);
+
+        // 🔁 他の予約との重複チェック（自分自身は除外）
+        $isOverlapping = Reservation::where('date', $validated['date'])
+            ->where('status', 'confirmed')
+            ->where('id', '!=', $reservation->id)
+            ->where(function ($query) use ($startDateTime, $endDateTime) {
+                $query->where('start_time', '<', $endDateTime->format('H:i:s'))
+                      ->where('end_time', '>', $startDateTime->format('H:i:s'));
+            })
+            ->exists();
+
+        if ($isOverlapping) {
+            return response()->json([
+                'message' => '指定された時間帯は他の予約と重複しています。',
+                'errors'  => [
+                    'start_time' => ['指定された時間帯は他の予約と重複しています。'],
+                ],
+            ], 409);
+        }
+
+        // 予約情報を更新（必要最小限）
+        $reservation->update([
+            'name'       => $validated['name'],
+            'date'       => $validated['date'],
+            'start_time' => $startDateTime->format('H:i:s'),
+            'end_time'   => $endDateTime->format('H:i:s'),
+            'service_id' => $validated['service_id'],
+        ]);
+
+        // 紐づく顧客の統計情報を再計算
+        if ($reservation->customer_id) {
+            $customer = Customer::find($reservation->customer_id);
+            if ($customer) {
+                $customer->recalculateStats();
+            }
+        }
+
+        // 更新後の最新を返す（Next側が即時反映しやすい）
+        $reservation->load(['service', 'user']);
+
+        return response()->json([
+            'message' => '予約内容を更新しました',
+            'reservation' => [
+                'id'           => $reservation->id,
+                'date'         => $reservation->date?->format('Y-m-d') ?? (string)$reservation->date,
+                'start_time'   => $reservation->start_time,
+                'end_time'     => $reservation->end_time,
+                'name'         => $reservation->name,
+                'email'        => $reservation->email,
+                'status'       => $reservation->status,
+                'notes'        => $reservation->notes,
+                'course'       => $reservation->course,
+                'maker'        => $reservation->maker,
+                'car_model'    => $reservation->car_model,
+                'service_id'   => $reservation->service_id,
+                'service_name' => $reservation->service?->name,
+                'duration'     => $reservation->service?->duration_minutes,
+                'service' => $reservation->service ? [
+                    'id'               => $reservation->service->id,
+                    'name'             => $reservation->service->name,
+                    'duration_minutes' => $reservation->service->duration_minutes,
+                ] : null,
+                'user_id'   => $reservation->user_id,
+                'user_name' => $reservation->user?->name,
+                'user'      => $reservation->user ? [
+                    'id'   => $reservation->user->id,
+                    'name' => $reservation->user->name,
+                ] : null,
+            ],
+        ], 200);
     }
 
     /**
@@ -144,12 +316,6 @@ class AdminReservationController extends Controller
                 'email'        => $reservation->email,
                 'status'       => $reservation->status,
                 'notes'        => $reservation->notes,
-
-                // ✅ 追加：編集画面でも必要になる可能性があるので保持（不一致防止・害なし）
-                'phone'        => $reservation->phone,
-                'maker'        => $reservation->maker,
-                'car_model'    => $reservation->car_model,
-                'course'       => $reservation->course,
 
                 // サービス関連
                 'service_id'   => $reservation->service_id,
@@ -271,5 +437,95 @@ class AdminReservationController extends Controller
         return redirect()
             ->route('admin.reservations.index')
             ->with('success', '予約を削除しました');
+    }
+
+
+
+    public function apiTimetable(Request $request)
+    {
+        $v = $request->validate([
+            'date' => ['required', 'date'],
+        ]);
+
+        $date = Carbon::parse($v['date']);
+
+        // ✅ 営業時間（BusinessHourは年/月/週/曜日）
+        if (BusinessHour::where('year', $date->year)->where('month', $date->month)->count() === 0) {
+            BusinessHour::seedDefaultForMonth($date->year, $date->month);
+        }
+
+        $dayNames = ['日','月','火','水','木','金','土'];
+        $dayJp = $dayNames[$date->dayOfWeek];
+        $weekOfMonth = BusinessHour::getWeekOfMonth($date);
+
+        $hour = BusinessHour::where('year', $date->year)
+            ->where('month', $date->month)
+            ->where('week_of_month', $weekOfMonth)
+            ->where('day_of_week', $dayJp)
+            ->first();
+
+        // ✅ 予約（その日だけ）
+        $reservations = Reservation::with('service')
+            ->whereDate('date', $date->format('Y-m-d'))
+            ->orderBy('start_time', 'asc')
+            ->get()
+            ->map(fn ($r) => [
+                'type' => 'reservation',
+                'id' => $r->id,
+                'lane' => 1, // ✅ 固定
+                'date' => $r->date?->format('Y-m-d') ?? (string)$r->date,
+                'start_time' => $r->start_time,
+                'end_time' => $r->end_time,
+                'name' => $r->name,
+                'course' => $r->course,
+                'maker' => $r->maker,
+                'car_model' => $r->car_model,
+                'service_name' => $r->service?->name,
+                'duration' => $r->service?->duration_minutes,
+                'status' => $r->status,
+            ]);
+
+        // ✅ 管理者ブロック（その日だけ）
+        $blocks = AdminBlock::whereDate('date', $date->format('Y-m-d'))
+            ->orderBy('lane')
+            ->orderBy('start_time')
+            ->get()
+            ->map(fn ($b) => [
+                'type' => 'block',
+                'id' => $b->id,
+                'lane' => (int)$b->lane,
+                'date' => $b->date->format('Y-m-d'),
+                'start_time' => substr((string)$b->start_time, 0, 5),
+                'end_time' => substr((string)$b->end_time, 0, 5),
+                'name' => $b->name,
+                'course' => $b->course,
+                'maker' => $b->maker,
+                'car_model' => $b->car_model,
+                'menu' => $b->menu,
+                'notes' => $b->notes,
+            ]);
+
+        return response()->json([
+            'date' => $date->format('Y-m-d'),
+            'business_hour' => $hour ? [
+                'is_closed' => (bool)$hour->is_closed,
+                'open_time' => $hour->open_time ? substr($hour->open_time, 0, 5) : null,
+                'close_time' => $hour->close_time ? substr($hour->close_time, 0, 5) : null,
+            ] : [
+                'is_closed' => false,
+                'open_time' => '09:00',
+                'close_time' => '19:30',
+            ],
+            'reservations' => $reservations,
+            'blocks' => $blocks,
+        ]);
+    }
+        public function timetable(Request $request)
+    {
+        $date = $request->query('date') ?? now()->format('Y-m-d');
+
+        return Inertia::render('Admin/Timetable', [
+            'date' => $date,
+        ]);
     }
 }
